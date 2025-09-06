@@ -13,11 +13,20 @@ import HowToUsePage from './components/HowToUsePage';
 import CallSupportPage from './components/CallSupportPage';
 import OfflineMode from './components/OfflineMode';
 import CulturalChatbot from './components/CulturalChatbot';
+import AnimatedLoader from './components/AnimatedLoader';
+
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
   const [isOnline, setIsOnline] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+  const timer = setTimeout(() => setLoading(false), 2000); // show loader for 2 seconds
+  return () => clearTimeout(timer);
+}, []);
+
 
   // Simulate network connectivity changes
   useEffect(() => {
@@ -78,9 +87,13 @@ function App() {
   };
 
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20 transition-colors duration-300">
+  <ThemeProvider>
+    <LanguageProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20 transition-colors duration-300 relative">
+        
+        {loading && <AnimatedLoader />} {/* Show loader when loading is true */}
+
+        <div className={`transition-opacity duration-300 ${loading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
           <CulturalHeader isOnline={isOnline} />
           
           {/* Demo Controls */}
@@ -148,9 +161,11 @@ function App() {
           <CulturalNavigation activeTab={activeTab} onTabChange={setActiveTab} />
           <CulturalChatbot />
         </div>
-      </LanguageProvider>
-    </ThemeProvider>
-  );
+      </div>
+    </LanguageProvider>
+  </ThemeProvider>
+);
+
 }
 
 export default App;
