@@ -63,7 +63,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           icons: ['lucide-react'],
-          utils: ['./src/services/mockService', './src/utils/constants']
+          services: ['./src/services/mockService']
         }
       }
     }
