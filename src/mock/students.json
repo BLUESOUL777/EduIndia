@@ -1,0 +1,98 @@
+[
+  {
+    "id": "student-1",
+    "name": "Rahul Sharma",
+    "email": "rahul.sharma@example.com",
+    "avatar": "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop",
+    "role": "student",
+    "enrolledCourses": ["course-1", "course-2"],
+    "completedLessons": 21,
+    "totalLessons": 42,
+    "assignmentsSubmitted": 8,
+    "totalAssignments": 12,
+    "attendanceRate": 85,
+    "learningStreak": 12,
+    "badges": [
+      {
+        "id": "first-lesson",
+        "name": "First Lesson Complete",
+        "nameHi": "पहला पाठ पूरा",
+        "nameMar": "पहिला धडा पूर्ण",
+        "icon": "🎯",
+        "earned": true,
+        "earnedDate": "2024-01-10T10:00:00Z"
+      },
+      {
+        "id": "perfect-score",
+        "name": "Perfect Score",
+        "nameHi": "परफेक्ट स्कोर",
+        "nameMar": "परफेक्ट स्कोअर",
+        "icon": "🏆",
+        "earned": true,
+        "earnedDate": "2024-01-22T14:30:00Z"
+      },
+      {
+        "id": "week-streak",
+        "name": "Week Streak",
+        "nameHi": "सप्ताह की लकीर",
+        "nameMar": "आठवड्याची सलग संख्या",
+        "icon": "🔥",
+        "earned": true,
+        "earnedDate": "2024-01-18T09:00:00Z"
+      },
+      {
+        "id": "helpful-peer",
+        "name": "Helpful Peer",
+        "nameHi": "सहायक साथी",
+        "nameMar": "मदतगार मित्र",
+        "icon": "🤝",
+        "earned": false,
+        "earnedDate": null
+      }
+    ],
+    "recentActivity": [
+      {
+        "type": "lesson_completed",
+        "title": "Completed CSS Fundamentals",
+        "titleHi": "CSS की बुनियादी बातें पूरी की",
+        "titleMar": "CSS मूलभूत गोष्टी पूर्ण केल्या",
+        "timestamp": "2024-01-20T09:15:00Z",
+        "score": 95
+      },
+      {
+        "type": "assignment_submitted",
+        "title": "Submitted HTML Assignment",
+        "titleHi": "HTML असाइनमेंट जमा किया",
+        "titleMar": "HTML असाइनमेंट सबमिट केले",
+        "timestamp": "2024-01-22T14:30:00Z",
+        "score": 92
+      },
+      {
+        "type": "badge_earned",
+        "title": "Earned Perfect Score Badge",
+        "titleHi": "परफेक्ट स्कोर बैज अर्जित किया",
+        "titleMar": "परफेक्ट स्कोअर बॅज मिळवले",
+        "timestamp": "2024-01-22T14:35:00Z",
+        "score": null
+      }
+    ],
+    "weeklyProgress": [
+      { "week": "Week 1", "progress": 20 },
+      { "week": "Week 2", "progress": 35 },
+      { "week": "Week 3", "progress": 50 },
+      { "week": "Week 4", "progress": 65 }
+    ],
+    "preferences": {
+      "language": "hi",
+      "lowBandwidthMode": true,
+      "audioOnlyMode": false,
+      "notifications": true
+    },
+    "parentInfo": {
+      "name": "Mrs. Sunita Sharma",
+      "phone": "+91-9876543210",
+      "email": "sunita.sharma@example.com",
+      "receiveUpdates": true
+    }
+  }
+]
