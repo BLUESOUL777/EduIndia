@@ -111,7 +111,7 @@
     "thumbnail": "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=800&h=450&q=80",
     "completed": false,
     "downloaded": false,
-    "progress": 0,
+    "progress": 25,
     "fileSize": "15.8 MB",
     "estimatedSize2G": "4.1 MB",
     "slides": [
@@ -159,7 +159,7 @@
     "thumbnail": "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&w=800&h=450&q=80",
     "completed": false,
     "downloaded": false,
-    "progress": 0,
+    "progress": 60,
     "fileSize": "16.5 MB",
     "estimatedSize2G": "4.2 MB",
     "slides": [
@@ -207,7 +207,7 @@
     "thumbnail": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&h=450&q=80",
     "completed": false,
     "downloaded": false,
-    "progress": 0,
+    "progress": 70,
     "fileSize": "14.2 MB",
     "estimatedSize2G": "3.8 MB",
     "slides": [
@@ -255,7 +255,7 @@
     "thumbnail": "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&h=450&q=80",
     "completed": false,
     "downloaded": false,
-    "progress": 0,
+    "progress": 90,
     "fileSize": "15.8 MB",
     "estimatedSize2G": "4.1 MB",
     "slides": [
@@ -303,7 +303,7 @@
     "thumbnail": "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&h=450&q=80",
     "completed": false,
     "downloaded": false,
-    "progress": 0,
+    "progress": 10,
     "fileSize": "14.5 MB",
     "estimatedSize2G": "3.9 MB",
     "slides": [
@@ -351,7 +351,7 @@
     "thumbnail": "https://images.unsplash.com/photo-1554475901-4538ddfbccc2?auto=format&fit=crop&w=800&h=450&q=80",
     "completed": false,
     "downloaded": false,
-    "progress": 0,
+    "progress": 70,
     "fileSize": "16.2 MB",
     "estimatedSize2G": "4.3 MB",
     "slides": [
