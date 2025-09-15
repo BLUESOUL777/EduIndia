@@ -2,17 +2,17 @@
   {
     "id": "lesson-1",
     "courseId": "course-1",
-    "title": "Introduction to HTML",
-    "titleHi": "HTML का परिचय",
-    "titleMar": "HTML चा परिचय",
-    "description": "Learn the basics of HTML structure and tags",
-    "descriptionHi": "HTML संरचना और टैग की बुनियादी बातें सीखें",
-    "descriptionMar": "HTML रचना आणि टॅगची मूलभूत गोष्टी शिका",
+    "title": "Earth Science Fundamentals",
+    "titleHi": "पृथ्वी विज्ञान की मूल बातें",
+    "titleMar": "पृथ्वी विज्ञानाची मूलतत्त्वे",
+    "description": "Core concepts of Earth Science for high school students",
+    "descriptionHi": "हाई स्कूल छात्रों के लिए पृथ्वी विज्ञान की मुख्य अवधारणाएं",
+    "descriptionMar": "उच्च माध्यमिक विद्यार्थ्यांसाठी पृथ्वी विज्ञानाच्या मूलभूत संकल्पना",
     "duration": "25:30",
     "audioUrl": "/sample-media/lesson1-audio.mp3",
     "slidesUrl": "/sample-media/lesson1-slides.pdf",
     "transcriptUrl": "/sample-media/lesson1-transcript.vtt",
-    "thumbnail": "https://images.pexels.com/photos/270404/pexels-photo-270404.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
+    "thumbnail": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&h=450&q=80",
     "completed": true,
     "downloaded": true,
     "progress": 100,
@@ -21,25 +21,25 @@
     "slides": [
       {
         "id": 1,
-        "title": "What is HTML?",
+        "title": "Earth Systems Overview",
         "timestamp": "00:00",
         "thumbnail": "/sample-media/slide1-thumb.webp"
       },
       {
         "id": 2,
-        "title": "HTML Document Structure",
+        "title": "Geological Processes",
         "timestamp": "05:30",
         "thumbnail": "/sample-media/slide2-thumb.webp"
       },
       {
         "id": 3,
-        "title": "Common HTML Tags",
+        "title": "Climate Systems",
         "timestamp": "12:15",
         "thumbnail": "/sample-media/slide3-thumb.webp"
       },
       {
         "id": 4,
-        "title": "Practice Exercise",
+        "title": "Lab Experiments",
         "timestamp": "20:00",
         "thumbnail": "/sample-media/slide4-thumb.webp"
       }
@@ -49,18 +49,18 @@
   },
   {
     "id": "lesson-2",
-    "courseId": "course-1",
-    "title": "CSS Fundamentals",
-    "titleHi": "CSS की बुनियादी बातें",
-    "titleMar": "CSS मूलभूत गोष्टी",
-    "description": "Learn how to style HTML with CSS",
-    "descriptionHi": "CSS के साथ HTML को स्टाइल करना सीखें",
-    "descriptionMar": "CSS सह HTML ला स्टाइल करायला शिका",
+    "courseId": "course-6",
+    "title": "Chemical Kinetics and Reactions",
+    "titleHi": "रासायनिक गतिकी और प्रतिक्रियाएं",
+    "titleMar": "रासायनिक गतिशास्त्र आणि प्रतिक्रिया",
+    "description": "Understanding reaction rates and mechanisms for Class 11-12",
+    "descriptionHi": "कक्षा 11-12 के लिए प्रतिक्रिया दर और क्रियाविधि को समझना",
+    "descriptionMar": "इयत्ता 11-12 साठी प्रतिक्रिया दर आणि यंत्रणा समजून घेणे",
     "duration": "32:45",
     "audioUrl": "/sample-media/lesson2-audio.mp3",
     "slidesUrl": "/sample-media/lesson2-slides.pdf",
     "transcriptUrl": "/sample-media/lesson2-transcript.vtt",
-    "thumbnail": "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
+    "thumbnail": "https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?auto=format&fit=crop&w=800&h=450&q=80",
     "completed": false,
     "downloaded": false,
     "progress": 45,
@@ -69,25 +69,25 @@
     "slides": [
       {
         "id": 1,
-        "title": "What is CSS?",
+        "title": "Reaction Rate Basics",
         "timestamp": "00:00",
         "thumbnail": "/sample-media/slide5-thumb.webp"
       },
       {
         "id": 2,
-        "title": "CSS Selectors",
+        "title": "Factors Affecting Rates",
         "timestamp": "08:20",
         "thumbnail": "/sample-media/slide6-thumb.webp"
       },
       {
         "id": 3,
-        "title": "CSS Properties",
+        "title": "Reaction Mechanisms",
         "timestamp": "16:30",
         "thumbnail": "/sample-media/slide7-thumb.webp"
       },
       {
         "id": 4,
-        "title": "Layout Basics",
+        "title": "Rate Laws and Order",
         "timestamp": "25:10",
         "thumbnail": "/sample-media/slide8-thumb.webp"
       }
@@ -98,17 +98,17 @@
   {
     "id": "lesson-3",
     "courseId": "course-1",
-    "title": "JavaScript Basics",
-    "titleHi": "JavaScript की बुनियादी बातें",
-    "titleMar": "JavaScript मूलभूत गोष्टी",
-    "description": "Introduction to JavaScript programming",
-    "descriptionHi": "JavaScript प्रोग्रामिंग का परिचय",
-    "descriptionMar": "JavaScript प्रोग्रामिंगचा परिचय",
+    "title": "Ecosystem Analysis",
+    "titleHi": "पारिस्थितिकी तंत्र विश्लेषण",
+    "titleMar": "परिसंस्था विश्लेषण",
+    "description": "Advanced ecosystem studies with data analysis for Class 12",
+    "descriptionHi": "कक्षा 12 के लिए डेटा विश्लेषण के साथ उन्नत पारिस्थितिकी तंत्र अध्ययन",
+    "descriptionMar": "इयत्ता 12 साठी डेटा विश्लेषणासह प्रगत परिसंस्था अभ्यास",
     "duration": "28:15",
     "audioUrl": "/sample-media/lesson3-audio.mp3",
     "slidesUrl": "/sample-media/lesson3-slides.pdf",
     "transcriptUrl": "/sample-media/lesson3-transcript.vtt",
-    "thumbnail": "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop",
+    "thumbnail": "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=800&h=450&q=80",
     "completed": false,
     "downloaded": false,
     "progress": 0,
@@ -117,27 +117,267 @@
     "slides": [
       {
         "id": 1,
-        "title": "What is JavaScript?",
+        "title": "Ecosystem Components",
         "timestamp": "00:00",
         "thumbnail": "/sample-media/slide9-thumb.webp"
       },
       {
         "id": 2,
-        "title": "Variables and Data Types",
+        "title": "Population Dynamics",
         "timestamp": "07:45",
         "thumbnail": "/sample-media/slide10-thumb.webp"
       },
       {
         "id": 3,
-        "title": "Functions",
+        "title": "Data Collection Methods",
         "timestamp": "15:30",
         "thumbnail": "/sample-media/slide11-thumb.webp"
       },
       {
         "id": 4,
-        "title": "DOM Manipulation",
+        "title": "Statistical Analysis",
         "timestamp": "22:00",
         "thumbnail": "/sample-media/slide12-thumb.webp"
+      }
+    ],
+    "lastWatched": null,
+    "watchTime": 0
+  },
+  {
+    "id": "lesson-4",
+    "courseId": "course-4",
+    "title": "Forces and Motion",
+    "titleHi": "बल और गति",
+    "titleMar": "बल आणि गती",
+    "description": "Understanding Newton's Laws through everyday examples",
+    "descriptionHi": "दैनिक उदाहरणों के माध्यम से न्यूटन के नियमों को समझना",
+    "descriptionMar": "दैनंदिन उदाहरणांद्वारे न्यूटनचे नियम समजून घेणे",
+    "duration": "35:20",
+    "audioUrl": "/sample-media/physics-lesson1-audio.mp3",
+    "slidesUrl": "/sample-media/physics-lesson1-slides.pdf",
+    "transcriptUrl": "/sample-media/physics-lesson1-transcript.vtt",
+    "thumbnail": "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&w=800&h=450&q=80",
+    "completed": false,
+    "downloaded": false,
+    "progress": 0,
+    "fileSize": "16.5 MB",
+    "estimatedSize2G": "4.2 MB",
+    "slides": [
+      {
+        "id": 1,
+        "title": "Introduction to Forces",
+        "timestamp": "00:00",
+        "thumbnail": "/sample-media/physics-slide1-thumb.webp"
+      },
+      {
+        "id": 2,
+        "title": "Newton's First Law",
+        "timestamp": "08:45",
+        "thumbnail": "/sample-media/physics-slide2-thumb.webp"
+      },
+      {
+        "id": 3,
+        "title": "Newton's Second Law",
+        "timestamp": "17:30",
+        "thumbnail": "/sample-media/physics-slide3-thumb.webp"
+      },
+      {
+        "id": 4,
+        "title": "Newton's Third Law",
+        "timestamp": "26:15",
+        "thumbnail": "/sample-media/physics-slide4-thumb.webp"
+      }
+    ],
+    "lastWatched": null,
+    "watchTime": 0
+  },
+  {
+    "id": "lesson-5",
+    "courseId": "course-5",
+    "title": "Speed Mathematics",
+    "titleHi": "गणित में तेज गति",
+    "titleMar": "गणितात वेग",
+    "description": "Quick multiplication and division techniques",
+    "descriptionHi": "त्वरित गुणा और भाग की तकनीकें",
+    "descriptionMar": "जलद गुणाकार आणि भागाकार तंत्रे",
+    "duration": "28:45",
+    "audioUrl": "/sample-media/math-lesson1-audio.mp3",
+    "slidesUrl": "/sample-media/math-lesson1-slides.pdf",
+    "transcriptUrl": "/sample-media/math-lesson1-transcript.vtt",
+    "thumbnail": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&h=450&q=80",
+    "completed": false,
+    "downloaded": false,
+    "progress": 0,
+    "fileSize": "14.2 MB",
+    "estimatedSize2G": "3.8 MB",
+    "slides": [
+      {
+        "id": 1,
+        "title": "Quick Multiplication",
+        "timestamp": "00:00",
+        "thumbnail": "/sample-media/math-slide1-thumb.webp"
+      },
+      {
+        "id": 2,
+        "title": "Division Shortcuts",
+        "timestamp": "07:15",
+        "thumbnail": "/sample-media/math-slide2-thumb.webp"
+      },
+      {
+        "id": 3,
+        "title": "Practice Problems",
+        "timestamp": "14:30",
+        "thumbnail": "/sample-media/math-slide3-thumb.webp"
+      },
+      {
+        "id": 4,
+        "title": "Real-world Applications",
+        "timestamp": "21:45",
+        "thumbnail": "/sample-media/math-slide4-thumb.webp"
+      }
+    ],
+    "lastWatched": null,
+    "watchTime": 0
+  },
+  {
+    "id": "lesson-6",
+    "courseId": "course-4",
+    "title": "Energy and Work",
+    "titleHi": "ऊर्जा और कार्य",
+    "titleMar": "ऊर्जा आणि कार्य",
+    "description": "Understanding energy types and work principles",
+    "descriptionHi": "ऊर्जा के प्रकार और कार्य के सिद्धांतों को समझना",
+    "descriptionMar": "ऊर्जेचे प्रकार आणि कार्याचे सिद्धांत समजून घेणे",
+    "duration": "33:15",
+    "audioUrl": "/sample-media/physics-lesson2-audio.mp3",
+    "slidesUrl": "/sample-media/physics-lesson2-slides.pdf",
+    "transcriptUrl": "/sample-media/physics-lesson2-transcript.vtt",
+    "thumbnail": "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&h=450&q=80",
+    "completed": false,
+    "downloaded": false,
+    "progress": 0,
+    "fileSize": "15.8 MB",
+    "estimatedSize2G": "4.1 MB",
+    "slides": [
+      {
+        "id": 1,
+        "title": "Types of Energy",
+        "timestamp": "00:00",
+        "thumbnail": "/sample-media/physics-slide5-thumb.webp"
+      },
+      {
+        "id": 2,
+        "title": "Work and Power",
+        "timestamp": "08:30",
+        "thumbnail": "/sample-media/physics-slide6-thumb.webp"
+      },
+      {
+        "id": 3,
+        "title": "Conservation of Energy",
+        "timestamp": "16:45",
+        "thumbnail": "/sample-media/physics-slide7-thumb.webp"
+      },
+      {
+        "id": 4,
+        "title": "Real World Examples",
+        "timestamp": "25:00",
+        "thumbnail": "/sample-media/physics-slide8-thumb.webp"
+      }
+    ],
+    "lastWatched": null,
+    "watchTime": 0
+  },
+  {
+    "id": "lesson-7",
+    "courseId": "course-5",
+    "title": "Number Pattern Recognition",
+    "titleHi": "संख्या पैटर्न पहचान",
+    "titleMar": "संख्या पॅटर्न ओळख",
+    "description": "Quick tricks for spotting number patterns",
+    "descriptionHi": "संख्या पैटर्न को पहचानने के लिए त्वरित तरीके",
+    "descriptionMar": "संख्या पॅटर्न ओळखण्यासाठी जलद युक्त्या",
+    "duration": "29:30",
+    "audioUrl": "/sample-media/math-lesson2-audio.mp3",
+    "slidesUrl": "/sample-media/math-lesson2-slides.pdf",
+    "transcriptUrl": "/sample-media/math-lesson2-transcript.vtt",
+    "thumbnail": "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&h=450&q=80",
+    "completed": false,
+    "downloaded": false,
+    "progress": 0,
+    "fileSize": "14.5 MB",
+    "estimatedSize2G": "3.9 MB",
+    "slides": [
+      {
+        "id": 1,
+        "title": "Pattern Types",
+        "timestamp": "00:00",
+        "thumbnail": "/sample-media/math-slide5-thumb.webp"
+      },
+      {
+        "id": 2,
+        "title": "Quick Recognition",
+        "timestamp": "07:45",
+        "thumbnail": "/sample-media/math-slide6-thumb.webp"
+      },
+      {
+        "id": 3,
+        "title": "Pattern Practice",
+        "timestamp": "15:00",
+        "thumbnail": "/sample-media/math-slide7-thumb.webp"
+      },
+      {
+        "id": 4,
+        "title": "Advanced Patterns",
+        "timestamp": "22:15",
+        "thumbnail": "/sample-media/math-slide8-thumb.webp"
+      }
+    ],
+    "lastWatched": null,
+    "watchTime": 0
+  },
+  {
+    "id": "lesson-8",
+    "courseId": "course-6",
+    "title": "Molecular Structure Analysis",
+    "titleHi": "आण्विक संरचना विश्लेषण",
+    "titleMar": "रेणीय संरचना विश्लेषण",
+    "description": "Advanced study of molecular structures and bonds",
+    "descriptionHi": "आण्विक संरचनाओं और बंधों का उन्नत अध्ययन",
+    "descriptionMar": "रेणीय संरचना आणि बंधांचा प्रगत अभ्यास",
+    "duration": "34:20",
+    "audioUrl": "/sample-media/chem-lesson2-audio.mp3",
+    "slidesUrl": "/sample-media/chem-lesson2-slides.pdf",
+    "transcriptUrl": "/sample-media/chem-lesson2-transcript.vtt",
+    "thumbnail": "https://images.unsplash.com/photo-1554475901-4538ddfbccc2?auto=format&fit=crop&w=800&h=450&q=80",
+    "completed": false,
+    "downloaded": false,
+    "progress": 0,
+    "fileSize": "16.2 MB",
+    "estimatedSize2G": "4.3 MB",
+    "slides": [
+      {
+        "id": 1,
+        "title": "Atomic Bonding",
+        "timestamp": "00:00",
+        "thumbnail": "/sample-media/chem-slide5-thumb.webp"
+      },
+      {
+        "id": 2,
+        "title": "Molecular Geometry",
+        "timestamp": "08:45",
+        "thumbnail": "/sample-media/chem-slide6-thumb.webp"
+      },
+      {
+        "id": 3,
+        "title": "Spectroscopic Analysis",
+        "timestamp": "17:15",
+        "thumbnail": "/sample-media/chem-slide7-thumb.webp"
+      },
+      {
+        "id": 4,
+        "title": "3D Molecular Modeling",
+        "timestamp": "26:00",
+        "thumbnail": "/sample-media/chem-slide8-thumb.webp"
       }
     ],
     "lastWatched": null,

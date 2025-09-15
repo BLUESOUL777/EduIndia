@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Download, Clock, Search, Filter, CheckCircle, Wifi, WifiOff, BookOpen, Headphones } from 'lucide-react';
-import { mockService, Lesson } from '../services/mockService';
+import { mockService, Lesson, Course } from '../services/mockService';
 import { useI18n } from '../hooks/useI18n';
 import LessonPlayer from '../components/LessonPlayer';
 
@@ -10,6 +10,7 @@ interface LessonsPageProps {
 
 const LessonsPage: React.FC<LessonsPageProps> = ({ isOnline = true }) => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('all');
@@ -21,31 +22,51 @@ const LessonsPage: React.FC<LessonsPageProps> = ({ isOnline = true }) => {
   const { t } = useI18n();
 
   useEffect(() => {
-    const loadLessons = async () => {
+    const loadData = async () => {
       try {
         setError(null);
-        const lessonsData = await mockService.getLessons();
+        const [lessonsData, coursesData] = await Promise.all([
+          mockService.getLessons(),
+          mockService.getCourses()
+        ]);
         setLessons(lessonsData);
+        setCourses(coursesData);
       } catch (error) {
-        console.error('Failed to load lessons:', error);
-        setError(error instanceof Error ? error.message : 'Failed to load lessons');
+        console.error('Failed to load data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
-    loadLessons();
+    loadData();
   }, []);
 
-  const subjects = ['all', 'Web Development', 'Computer Science', 'Digital Marketing'];
+  const subjects = [
+    'all',
+    'Physics',
+    'Chemistry',
+    'Mathematics',
+    'Computer Science',
+    'Environmental Science',
+    'Literature'
+  ];
 
-  const filteredLessons = lessons.filter(lesson => {
+  const filteredAndGroupedLessons = lessons.reduce((acc: { [key: string]: Lesson[] }, lesson) => {
+    const course = courses.find(c => c.id === lesson.courseId);
     const matchesSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          lesson.titleHi.includes(searchTerm) ||
                          lesson.titleMar.includes(searchTerm);
-    const matchesSubject = selectedSubject === 'all' || lesson.courseId.includes(selectedSubject.toLowerCase().replace(' ', '-'));
-    return matchesSearch && matchesSubject;
-  });
+    const matchesSubject = selectedSubject === 'all' || course?.category === selectedSubject;
+
+    if (matchesSearch && matchesSubject) {
+      if (!acc[lesson.courseId]) {
+        acc[lesson.courseId] = [];
+      }
+      acc[lesson.courseId].push(lesson);
+    }
+    return acc;
+  }, {});
 
   // Simulate download with progress
   const simulateDownload = (lessonId: string) => {
@@ -130,7 +151,7 @@ const LessonsPage: React.FC<LessonsPageProps> = ({ isOnline = true }) => {
               {t('lessons.title')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {filteredLessons.length} {t('lessons.available', 'lessons available')}
+              {Object.values(filteredAndGroupedLessons).reduce((total, courseLessons) => total + courseLessons.length, 0)} {t('lessons.available', 'lessons available')}
             </p>
           </div>
           
@@ -241,12 +262,21 @@ const LessonsPage: React.FC<LessonsPageProps> = ({ isOnline = true }) => {
       )}
 
       {/* Lessons Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredLessons.map((lesson) => (
-          <div key={lesson.id} className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group">
-            {/* Thumbnail */}
-            <div className="relative">
-              <img
+      <div className="space-y-8">
+        {Object.entries(filteredAndGroupedLessons).map(([courseId, courseLessons]) => {
+          const course = courses.find(c => c.id === courseId);
+          return (
+            <div key={courseId}>
+              <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center">
+                <BookOpen className="mr-2 text-primary" size={20} />
+                {course?.title || 'Course'}
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {courseLessons.map((lesson: Lesson) => (
+                    <div key={lesson.id} className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group">
+                      {/* Thumbnail */}
+                      <div className="relative">
+                        <img
                 src={lesson.thumbnail}
                 alt={lesson.title}
                 className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
@@ -376,13 +406,17 @@ const LessonsPage: React.FC<LessonsPageProps> = ({ isOnline = true }) => {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-        ))}
-      </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-      {/* Empty State */}
-      {filteredLessons.length === 0 && !error && (
+        {/* Empty State */}
+      {Object.keys(filteredAndGroupedLessons).length === 0 && !error && (
         <div className="text-center py-12">
           <BookOpen size={64} className="mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold text-card-foreground mb-2">{t('lessons.noLessons', 'No lessons found')}</h3>

@@ -406,9 +406,9 @@ class MockService {
           title: 'New Assignment Posted',
           titleHi: 'नया असाइनमेंट पोस्ट किया गया',
           titleMar: 'नवीन असाइनमेंट पोस्ट केले',
-          message: 'CSS Styling assignment is now available',
-          messageHi: 'CSS स्टाइलिंग असाइनमेंट अब उपलब्ध है',
-          messageMar: 'CSS स्टाइलिंग असाइनमेंट आता उपलब्ध आहे',
+          message: 'Water Conservation assignment is now available',
+          messageHi: 'जल संरक्षण असाइनमेंट अब उपलब्ध है',
+          messageMar: 'पाणी संरक्षण असाइनमेंट आता उपलब्ध आहे',
           type: 'info',
           timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
           read: false,
@@ -419,9 +419,9 @@ class MockService {
           title: 'Grade Received',
           titleHi: 'ग्रेड प्राप्त हुआ',
           titleMar: 'ग्रेड मिळाले',
-          message: 'You received an A grade on your HTML assignment',
-          messageHi: 'आपको अपने HTML असाइनमेंट पर A ग्रेड मिला',
-          messageMar: 'तुम्हाला तुमच्या HTML असाइनमेंटवर A ग्रेड मिळाले',
+          message: 'You received an A grade on your Desert Ecosystem assignment',
+          messageHi: 'आपको अपने रेगिस्तानी पारिस्थितिकी असाइनमेंट पर A ग्रेड मिला',
+          messageMar: 'तुम्हाला तुमच्या वाळवंटी परिसंस्था असाइनमेंटवर A ग्रेड मिळाले',
           type: 'success',
           timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
           read: false,
@@ -461,9 +461,9 @@ class MockService {
       const defaultClasses: LiveClass[] = [
         {
           id: 'live-1',
-          title: 'Advanced CSS Techniques',
-          titleHi: 'उन्नत CSS तकनीकें',
-          titleMar: 'प्रगत CSS तंत्रे',
+          title: 'Advanced Water Conservation',
+          titleHi: 'उन्नत जल संरक्षण तकनीकें',
+          titleMar: 'प्रगत पाणी संरक्षण तंत्रे',
           instructor: 'Dr. Priya Sharma',
           startTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes from now
           endTime: new Date(Date.now() + 90 * 60 * 1000).toISOString(), // 90 minutes from now
@@ -474,9 +474,9 @@ class MockService {
         },
         {
           id: 'live-2',
-          title: 'JavaScript Fundamentals',
-          titleHi: 'JavaScript की बुनियादी बातें',
-          titleMar: 'JavaScript मूलभूत गोष्टी',
+          title: 'Biodiversity Conservation',
+          titleHi: 'जैव विविधता संरक्षण की बुनियादी बातें',
+          titleMar: 'जैवविविधता संरक्षण मूलभूत गोष्टी',
           instructor: 'Prof. Rajesh Kumar',
           startTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // Started 30 minutes ago
           endTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // Ends in 30 minutes

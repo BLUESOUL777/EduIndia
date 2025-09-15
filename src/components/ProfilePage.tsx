@@ -6,11 +6,11 @@ import { useLanguage } from '../contexts/LanguageContext';
 const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: 'Dr. Aryan Kumar',
+    email: 'teacher.aryan@eduindia.tech',
     phone: '+91-9876543210',
-    location: 'Rural Maharashtra, India',
-    bio: 'Passionate learner interested in web development and technology.',
+    location: 'Maharashtra, India',
+    bio: 'Senior educator at EduIndia, specializing in Computer Science and Mathematics. Passionate about making quality education accessible to all students through technology.',
     notifications: true,
     lowBandwidth: true
   });
@@ -18,17 +18,17 @@ const ProfilePage: React.FC = () => {
   const { language, setLanguage, availableLanguages } = useLanguage();
 
   const achievements = [
-    { id: 1, title: 'First Assignment', description: 'Completed your first assignment', earned: true, icon: '🎯' },
-    { id: 2, title: 'Perfect Score', description: 'Achieved 100% on an assignment', earned: true, icon: '🏆' },
-    { id: 3, title: 'Consistent Learner', description: 'Completed 7 days in a row', earned: false, icon: '🔥' },
-    { id: 4, title: 'Question Master', description: 'Asked 50 questions in AI chat', earned: true, icon: '❓' },
+    { id: 1, title: 'Master Educator', description: 'Trained 1000+ students successfully', earned: true, icon: '👨‍�' },
+    { id: 2, title: 'Course Creator', description: 'Created 5 high-impact courses', earned: true, icon: '🏆' },
+    { id: 3, title: 'Tech Innovation', description: 'Pioneered blended learning approach', earned: true, icon: '�' },
+    { id: 4, title: 'Community Leader', description: 'Most active EduIndia educator', earned: true, icon: '🌟' },
   ];
 
   const stats = [
-    { label: 'Lessons Completed', value: '24', color: 'text-blue-600' },
-    { label: 'Assignments Submitted', value: '18', color: 'text-green-600' },
-    { label: 'Average Score', value: '88%', color: 'text-purple-600' },
-    { label: 'Learning Streak', value: '12 days', color: 'text-orange-600' },
+    { label: 'Students Taught', value: '1250+', color: 'text-blue-600' },
+    { label: 'Courses Created', value: '12', color: 'text-green-600' },
+    { label: 'Avg. Student Score', value: '92%', color: 'text-purple-600' },
+    { label: 'Teaching Hours', value: '2000+', color: 'text-orange-600' },
   ];
 
   const handleSave = () => {
@@ -76,7 +76,8 @@ const ProfilePage: React.FC = () => {
               ) : (
                 <div>
                   <h2 className="text-xl font-semibold text-card-foreground">{profile.name}</h2>
-                  <p className="text-muted-foreground">{t('profile.studentRole', 'Computer Science Student')}</p>
+                  <p className="text-muted-foreground">Senior Teacher - EduIndia</p>
+                  <p className="text-sm text-muted-foreground">Ph.D. in Education Technology</p>
                   <p className="text-sm text-muted-foreground mt-1">
                     {profile.bio}
                   </p>

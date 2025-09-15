@@ -288,9 +288,9 @@ const RecorderStub: React.FC<RecorderStubProps> = ({ onRecordingComplete }) => {
               {t('teacher.subject')}
             </label>
             <select className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent">
-              <option>Web Development</option>
-              <option>Computer Science</option>
-              <option>Digital Marketing</option>
+              <option>Environmental Science</option>
+              <option>Arts & Crafts</option>
+              <option>Technology</option>
               <option>{t('teacher.basicComputer', 'Basic Computer Skills')}</option>
             </select>
           </div>

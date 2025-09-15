@@ -12,20 +12,20 @@ const AssignmentCenter: React.FC = () => {
   const assignments = [
     {
       id: 1,
-      title: 'React Hooks Implementation',
-      subject: 'Web Development',
+      title: 'Desert Ecosystem Research Report',
+      subject: 'Environmental Science',
       submittedDate: '2024-01-15',
       dueDate: '2024-01-25',
       status: 'graded',
       grade: 'A',
       aiScore: 92,
-      feedback: 'Excellent work! Your implementation shows a deep understanding of React hooks. The code is clean and well-structured.',
+      feedback: 'Excellent work! Your research shows a deep understanding of desert ecosystems. The report is thorough and well-structured.',
       instructor: 'Dr. Priya Sharma'
     },
     {
       id: 2,
-      title: 'Component Design Patterns',
-      subject: 'Web Development',
+      title: 'Water Conservation Action Plan',
+      subject: 'Environmental Science',
       submittedDate: '2024-01-16',
       dueDate: '2024-01-28',
       status: 'reviewing',
@@ -36,8 +36,8 @@ const AssignmentCenter: React.FC = () => {
     },
     {
       id: 3,
-      title: 'State Management Analysis',
-      subject: 'Web Development',
+      title: 'Local Biodiversity Survey',
+      subject: 'Environmental Science',
       submittedDate: null,
       dueDate: '2024-01-30',
       status: 'pending',

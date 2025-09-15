@@ -6,7 +6,8 @@ import { DashboardSkeleton } from '../components/SkeletonLoader';
 
 const Dashboard: React.FC = () => {
   const [student, setStudent] = useState<Student | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
+  const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [showParentView, setShowParentView] = useState(false);
   const { t } = useI18n();
@@ -23,13 +24,15 @@ const Dashboard: React.FC = () => {
           setStudent(studentData);
         }
         if (coursesData) {
-          setCourses(coursesData.filter(course => course.enrolled));
+          setEnrolledCourses(coursesData.filter(course => course.enrolled));
+          setAvailableCourses(coursesData.filter(course => !course.enrolled));
         }
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
         // Set empty state instead of failing completely
         setStudent(null);
-        setCourses([]);
+        setEnrolledCourses([]);
+        setAvailableCourses([]);
       } finally {
         setLoading(false);
       }
@@ -305,7 +308,7 @@ Generated on: ${new Date().toLocaleString()}
           {t('dashboard.coursesEnrolled')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {courses.map((course) => (
+          {enrolledCourses.map((course: Course) => (
             <div key={course.id} className="border border-border rounded-lg p-4 hover:shadow-md transition-all bg-card">
               <div className="flex items-start space-x-4">
                 <img
@@ -329,6 +332,45 @@ Generated on: ${new Date().toLocaleString()}
                       className="bg-chart-2 h-1.5 rounded-full transition-all duration-300"
                       style={{ width: `${course.progress}%` }}
                     />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Available Courses */}
+      <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center">
+          <BookOpen className="mr-2 text-primary" size={20} />
+          {t('dashboard.coursesAvailable', 'Available Courses')}
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {availableCourses.map((course: Course) => (
+            <div key={course.id} className="border border-border rounded-lg p-4 hover:shadow-md transition-all bg-card">
+              <div className="flex items-start space-x-4">
+                <img
+                  src={course.thumbnail}
+                  alt={course.title}
+                  className="w-16 h-16 rounded-lg object-cover"
+                />
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-card-foreground mb-1">{course.title}</h4>
+                  <p className="text-sm text-muted-foreground mb-2">{course.instructor}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {course.totalLessons} lessons
+                    </span>
+                    <button 
+                      className="text-xs px-3 py-1 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
+                      onClick={() => {
+                        // TODO: Implement enrollment functionality
+                        alert('Enrollment functionality will be implemented soon!');
+                      }}
+                    >
+                      Enroll Now
+                    </button>
                   </div>
                 </div>
               </div>

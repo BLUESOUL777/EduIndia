@@ -404,31 +404,7 @@ const AppContent: React.FC = () => {
                 user={user}
             />
 
-            {/* Demo Controls - Only show in development */}
-            {process.env.NODE_ENV === "development" && (
-                <div className="bg-muted border-b border-border p-2">
-                    <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-                        <span className="text-muted-foreground">
-                            Demo Controls:
-                        </span>
-                        <button
-                            onClick={sendTestNotification}
-                            className="bg-primary text-primary-foreground px-2 py-1 rounded text-xs hover:bg-primary/90 transition-colors"
-                        >
-                            Send Test Notification
-                        </button>
-                        <button
-                            onClick={() => mockService.resetMockData()}
-                            className="bg-destructive text-destructive-foreground px-2 py-1 rounded text-xs hover:bg-destructive/90 transition-colors"
-                        >
-                            Reset Demo Data
-                        </button>
-                        <span className="text-muted-foreground">
-                            Cache: {mockService.getCacheSize()}
-                        </span>
-                    </div>
-                </div>
-            )}
+           
 
             <main className="p-4">{renderContent()}</main>
 

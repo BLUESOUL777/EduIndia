@@ -2,7 +2,7 @@
   {
     "id": "student-1",
     "name": "Rahul Sharma",
-    "email": "rahul.sharma@example.com",
+    "email": "rahul.sharma@eduindia.tech",
     "avatar": "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop",
     "role": "student",
     "enrolledCourses": ["course-1", "course-2"],
@@ -53,17 +53,17 @@
     "recentActivity": [
       {
         "type": "lesson_completed",
-        "title": "Completed CSS Fundamentals",
-        "titleHi": "CSS की बुनियादी बातें पूरी की",
-        "titleMar": "CSS मूलभूत गोष्टी पूर्ण केल्या",
+        "title": "Completed Water Conservation Methods",
+        "titleHi": "जल संरक्षण के तरीके पूरे किए",
+        "titleMar": "पाणी संरक्षण पद्धती पूर्ण केल्या",
         "timestamp": "2024-01-20T09:15:00Z",
         "score": 95
       },
       {
         "type": "assignment_submitted",
-        "title": "Submitted HTML Assignment",
-        "titleHi": "HTML असाइनमेंट जमा किया",
-        "titleMar": "HTML असाइनमेंट सबमिट केले",
+        "title": "Submitted Desert Ecosystem Report",
+        "titleHi": "रेगिस्तानी पारिस्थितिकी रिपोर्ट जमा की",
+        "titleMar": "वाळवंटी परिसंस्था अहवाल सबमिट केला",
         "timestamp": "2024-01-22T14:30:00Z",
         "score": 92
       },
@@ -91,7 +91,7 @@
     "parentInfo": {
       "name": "Mrs. Sunita Sharma",
       "phone": "+91-9876543210",
-      "email": "sunita.sharma@example.com",
+      "email": "sunita.sharma@eduindia.tech",
       "receiveUpdates": true
     }
   }
