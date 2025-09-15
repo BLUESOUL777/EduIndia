@@ -88,7 +88,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <img
-                        src="/WhatsApp Image 2025-09-14 at 15.35.03.jpeg"
+                        src="/EduIndia-Logo.jpeg"
                         alt="EduIndia Logo"
                         className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
                     />

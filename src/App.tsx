@@ -109,7 +109,7 @@ const Header: React.FC<{
                 <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                         <img
-                            src="/WhatsApp Image 2025-09-14 at 15.35.03.jpeg"
+                            src="/EduIndia-Logo.jpeg"
                             alt="EduIndia Logo"
                             className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center shadow-md"
                         />
