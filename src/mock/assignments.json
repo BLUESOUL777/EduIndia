@@ -1,0 +1,147 @@
+[
+  {
+    "id": "assignment-1",
+    "courseId": "course-1",
+    "title": "Create Your First HTML Page",
+    "titleHi": "अपना पहला HTML पेज बनाएं",
+    "titleMar": "तुमचे पहिले HTML पान तयार करा",
+    "description": "Create a simple HTML page with basic structure and content",
+    "descriptionHi": "बुनियादी संरचना और सामग्री के साथ एक सरल HTML पेज बनाएं",
+    "descriptionMar": "मूलभूत रचना आणि सामग्रीसह एक साधे HTML पान तयार करा",
+    "dueDate": "2024-01-25T23:59:00Z",
+    "submissionDate": "2024-01-22T14:30:00Z",
+    "status": "graded",
+    "grade": "A",
+    "score": 92,
+    "maxScore": 100,
+    "feedback": "Excellent work! Your HTML structure is clean and well-organized. Consider adding more semantic elements in future assignments.",
+    "feedbackHi": "उत्कृष्ट काम! आपकी HTML संरचना साफ और व्यवस्थित है। भविष्य के असाइनमेंट में अधिक सिमेंटिक एलिमेंट्स जोड़ने पर विचार करें।",
+    "feedbackMar": "उत्कृष्ट काम! तुमची HTML रचना स्वच्छ आणि व्यवस्थित आहे. भविष्यातील असाइनमेंटमध्ये अधिक सिमेंटिक एलिमेंट्स जोडण्याचा विचार करा.",
+    "instructor": "Dr. Priya Sharma",
+    "submittedFiles": [
+      {
+        "name": "index.html",
+        "size": "2.1 KB",
+        "type": "text/html",
+        "url": "/mock-files/assignment1-index.html"
+      }
+    ],
+    "rubric": [
+      {
+        "criteria": "HTML Structure",
+        "points": 25,
+        "earned": 23
+      },
+      {
+        "criteria": "Content Quality",
+        "points": 25,
+        "earned": 24
+      },
+      {
+        "criteria": "Code Organization",
+        "points": 25,
+        "earned": 23
+      },
+      {
+        "criteria": "Creativity",
+        "points": 25,
+        "earned": 22
+      }
+    ]
+  },
+  {
+    "id": "assignment-2",
+    "courseId": "course-1",
+    "title": "Style Your HTML with CSS",
+    "titleHi": "CSS के साथ अपने HTML को स्टाइल करें",
+    "titleMar": "CSS सह तुमच्या HTML ला स्टाइल करा",
+    "description": "Add CSS styling to your HTML page from the previous assignment",
+    "descriptionHi": "पिछले असाइनमेंट से अपने HTML पेज में CSS स्टाइलिंग जोड़ें",
+    "descriptionMar": "मागील असाइनमेंटमधील तुमच्या HTML पानात CSS स्टाइलिंग जोडा",
+    "dueDate": "2024-02-01T23:59:00Z",
+    "submissionDate": "2024-01-28T16:45:00Z",
+    "status": "submitted",
+    "grade": null,
+    "score": null,
+    "maxScore": 100,
+    "feedback": null,
+    "instructor": "Dr. Priya Sharma",
+    "submittedFiles": [
+      {
+        "name": "index.html",
+        "size": "3.2 KB",
+        "type": "text/html",
+        "url": "/mock-files/assignment2-index.html"
+      },
+      {
+        "name": "styles.css",
+        "size": "1.8 KB",
+        "type": "text/css",
+        "url": "/mock-files/assignment2-styles.css"
+      }
+    ],
+    "rubric": [
+      {
+        "criteria": "CSS Implementation",
+        "points": 30,
+        "earned": null
+      },
+      {
+        "criteria": "Design Quality",
+        "points": 25,
+        "earned": null
+      },
+      {
+        "criteria": "Responsiveness",
+        "points": 25,
+        "earned": null
+      },
+      {
+        "criteria": "Code Quality",
+        "points": 20,
+        "earned": null
+      }
+    ]
+  },
+  {
+    "id": "assignment-3",
+    "courseId": "course-1",
+    "title": "Interactive JavaScript Features",
+    "titleHi": "इंटरैक्टिव JavaScript फीचर्स",
+    "titleMar": "इंटरॅक्टिव्ह JavaScript वैशिष्ट्ये",
+    "description": "Add interactive features to your website using JavaScript",
+    "descriptionHi": "JavaScript का उपयोग करके अपनी वेबसाइट में इंटरैक्टिव फीचर्स जोड़ें",
+    "descriptionMar": "JavaScript वापरून तुमच्या वेबसाइटमध्ये इंटरॅक्टिव्ह वैशिष्ट्ये जोडा",
+    "dueDate": "2024-02-08T23:59:00Z",
+    "submissionDate": null,
+    "status": "pending",
+    "grade": null,
+    "score": null,
+    "maxScore": 100,
+    "feedback": null,
+    "instructor": "Dr. Priya Sharma",
+    "submittedFiles": [],
+    "rubric": [
+      {
+        "criteria": "JavaScript Functionality",
+        "points": 35,
+        "earned": null
+      },
+      {
+        "criteria": "User Experience",
+        "points": 25,
+        "earned": null
+      },
+      {
+        "criteria": "Code Structure",
+        "points": 25,
+        "earned": null
+      },
+      {
+        "criteria": "Innovation",
+        "points": 15,
+        "earned": null
+      }
+    ]
+  }
+]

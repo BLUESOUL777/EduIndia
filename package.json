@@ -1,0 +1,50 @@
+{
+  "name": "eduindia-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Educational platform for Indian students with regional language support",
+  "keywords": [
+    "education",
+    "india",
+    "multilingual",
+    "regional-languages",
+    "low-bandwidth"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "build:prod": "npm run lint && vite build",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules/.vite",
+    "analyze": "npm run build && npx vite-bundle-analyzer dist/stats.html"
+  },
+  "dependencies": {
+    "idb": "^8.0.3",
+    "lucide-react": "^0.344.0",
+    "nodemon": "^3.1.10",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite-plugin-pwa": "^1.0.3",
+    "workbox-window": "^7.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@types/node": "^24.3.3",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.18",
+    "eslint": "^9.9.1",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.11",
+    "globals": "^15.9.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.3.0",
+    "vite": "^5.4.2"
+  }
+}
