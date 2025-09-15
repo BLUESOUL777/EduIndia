@@ -1,137 +1,616 @@
-import React, { useState, useEffect } from 'react';
-import { Video, VideoOff, Mic, MicOff, Users, MessageSquare, Hand, Share, Phone, PhoneOff, Monitor, Wifi } from 'lucide-react';
-import { mockService, LiveClass } from '../services/mockService';
-import { useI18n } from '../hooks/useI18n';
+// LiveClassPage.tsx
+import { useEffect, useRef, useState } from "react";
+import {
+  Video,
+  VideoOff,
+  Mic,
+  MicOff,
+  Users,
+  MessageSquare,
+  Hand,
+  Share,
+  PhoneOff,
+  Radio,
+  Square,
+  Play,
+  Pause,
+  Download,
+} from "lucide-react";
 
-const LiveClassPage: React.FC = () => {
+/**
+ * Full LiveClassPage component (single-file)
+ * - device enumeration + selectors (requests permission once if labels hidden)
+ * - getUserMedia with explicit deviceId constraints
+ * - attach stream after DOM mount (fixes preview not showing)
+ * - autoplay handling via loadedmetadata + try/catch
+ * - mic test using hidden audio element
+ * - recording (MediaRecorder)
+ */
+
+/* ----------------------------- Types ----------------------------- */
+interface LiveClass {
+  id: string;
+  title: string;
+  instructor: string;
+  status: "live" | "scheduled" | "ended";
+  startTime: string;
+  endTime: string;
+  participants: number;
+  maxParticipants: number;
+  recordingUrl: string | null;
+}
+
+interface ChatMessage {
+  id: string;
+  sender: string;
+  message: string;
+  timestamp: string;
+}
+
+/* -------------------------- Mock Service ------------------------- */
+const mockService = {
+  getLiveClasses: async (): Promise<LiveClass[]> => {
+    return [
+      {
+        id: "1",
+        title: "Mathematics - Algebra Basics",
+        instructor: "Prof. Sharma",
+        status: "live",
+        startTime: new Date().toISOString(),
+        endTime: new Date(Date.now() + 3600000).toISOString(),
+        participants: 24,
+        maxParticipants: 50,
+        recordingUrl: null,
+      },
+      {
+        id: "2",
+        title: "Science - Physics Fundamentals",
+        instructor: "Dr. Patel",
+        status: "scheduled",
+        startTime: new Date(Date.now() + 7200000).toISOString(),
+        endTime: new Date(Date.now() + 10800000).toISOString(),
+        participants: 0,
+        maxParticipants: 50,
+        recordingUrl: null,
+      },
+      {
+        id: "3",
+        title: "English Literature - Shakespeare",
+        instructor: "Prof. Johnson",
+        status: "ended",
+        startTime: new Date(Date.now() - 7200000).toISOString(),
+        endTime: new Date(Date.now() - 3600000).toISOString(),
+        participants: 35,
+        maxParticipants: 50,
+        recordingUrl: "https://example.com/recording-123",
+      },
+    ];
+  },
+  joinLiveClass: async (classId: string) => {
+    console.log("Joining class:", classId);
+    return true;
+  },
+  uploadRecording: async (title: string, description: string, blob: Blob, type = "video") => {
+    console.log("Uploading recording:", { title, description, blob, type });
+    return "lesson-" + Date.now();
+  },
+};
+
+/* --------------------------- Component --------------------------- */
+export default function LiveClassPage(): JSX.Element {
+  // Data + UI state
   const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [activeClass, setActiveClass] = useState<LiveClass | null>(null);
   const [isJoined, setIsJoined] = useState(false);
-  const [chatMessage, setChatMessage] = useState('');
-  const [chatMessages, setChatMessages] = useState<Array<{id: string, sender: string, message: string, timestamp: string}>>([]);
-  const [isVideoOn, setIsVideoOn] = useState(false);
+  const [chatMessage, setChatMessage] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isVideoOn, setIsVideoOn] = useState(true);
   const [isAudioOn, setIsAudioOn] = useState(true);
   const [handRaised, setHandRaised] = useState(false);
-  const { t } = useI18n();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [recordingMode, setRecordingMode] = useState<"camera" | "screen">("camera");
+  const [hasRecording, setHasRecording] = useState(false);
+  const [lessonTitle, setLessonTitle] = useState("");
+  const [lessonDescription, setLessonDescription] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(1);
+  const [totalSlides] = useState(5);
+  const [isTeacher, setIsTeacher] = useState(false);
+
+  // Device lists & selected device ids
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [selectedAudioId, setSelectedAudioId] = useState<string | null>(null);
+
+  // Refs
+  const localVideoRef = useRef<HTMLVideoElement | null>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  const localAudioRef = useRef<HTMLAudioElement | null>(null); // hidden element used for mic test
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const intervalRef = useRef<number | null>(null);
+
+  /* ---------------------- Lifecycle: load + devices ---------------------- */
   useEffect(() => {
-    const loadLiveClasses = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const classes = await mockService.getLiveClasses();
-        setLiveClasses(classes);
-      } catch (error) {
-        setError((error as Error).message);
-      } finally {
-        setLoading(false);
+    loadLiveClasses();
+    enumerateDevices();
+
+    const onDeviceChange = () => {
+      enumerateDevices();
+    };
+    navigator.mediaDevices?.addEventListener?.("devicechange", onDeviceChange);
+
+    return () => {
+      navigator.mediaDevices?.removeEventListener?.("devicechange", onDeviceChange);
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((t) => t.stop());
+        localStreamRef.current = null;
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
     };
-
-    loadLiveClasses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const retryLoadClasses = () => {
-    const loadLiveClasses = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const classes = await mockService.getLiveClasses();
-        setLiveClasses(classes);
-      } catch (error) {
-        setError((error as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadLiveClasses();
+  const loadLiveClasses = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const classes = await mockService.getLiveClasses();
+      setLiveClasses(classes);
+    } catch (err: any) {
+      setError(err?.message || "Failed to load classes");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const joinClass = async (classId: string) => {
+  // If device labels are empty the browser usually hasn't granted permissions yet.
+  // This helper requests minimal permission and then re-enumerates devices so labels appear.
+  const ensurePermissionsForDevices = async () => {
     try {
+      // Request minimal permission (camera+mic), then immediately stop tracks
+      const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      s.getTracks().forEach((t) => t.stop());
+    } catch (err) {
+      // ignore: user may cancel; labels will remain empty
+    }
+  };
+
+  const enumerateDevices = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videos = devices.filter((d) => d.kind === "videoinput");
+      const audios = devices.filter((d) => d.kind === "audioinput");
+
+      // if labels are empty, prompt for permissions once to reveal labels
+      const needPermission = [...videos, ...audios].some((d) => !d.label);
+      if (needPermission) {
+        await ensurePermissionsForDevices();
+        // re-enumerate
+        const devices2 = await navigator.mediaDevices.enumerateDevices();
+        const videos2 = devices2.filter((d) => d.kind === "videoinput");
+        const audios2 = devices2.filter((d) => d.kind === "audioinput");
+        setVideoDevices(videos2);
+        setAudioDevices(audios2);
+        if (videos2.length && !selectedVideoId) setSelectedVideoId(videos2[0].deviceId);
+        if (audios2.length && !selectedAudioId) setSelectedAudioId(audios2[0].deviceId);
+        return;
+      }
+
+      setVideoDevices(videos);
+      setAudioDevices(audios);
+      if (videos.length && !selectedVideoId) setSelectedVideoId(videos[0].deviceId);
+      if (audios.length && !selectedAudioId) setSelectedAudioId(audios[0].deviceId);
+    } catch (err) {
+      console.warn("enumerateDevices failed", err);
+    }
+  };
+
+  /* -------------------------- Utilities -------------------------- */
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Helper to attach and autoplay stream on a video element (wrapped play call)
+  const attachStreamToVideo = async (el: HTMLVideoElement | null, stream: MediaStream | null, muted = true) => {
+    if (!el || !stream) return;
+    try {
+      el.srcObject = stream;
+      el.muted = muted;
+
+      // Try to play after metadata; autoplay may still be blocked for audio but muted videos usually play
+      if (el.readyState >= 1) {
+        await el.play().catch((err) => {
+          console.warn("video.play() blocked (autoplay policy). User interaction needed.", err);
+        });
+      } else {
+        await new Promise<void>((resolve) => {
+          const onMeta = async () => {
+            el.removeEventListener("loadedmetadata", onMeta);
+            await el.play().catch((err) => {
+              console.warn("video.play() blocked (autoplay policy). User interaction needed.", err);
+            });
+            resolve();
+          };
+          el.addEventListener("loadedmetadata", onMeta);
+          // safety timeout - resolve in case event never fires
+          setTimeout(resolve, 500);
+        });
+      }
+    } catch (err) {
+      console.warn("attachStreamToVideo error:", err);
+    }
+  };
+
+  /* ------------------ NEW: attach stream after join/mount ------------------ */
+  useEffect(() => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    let mounted = true;
+
+    (async () => {
+      if (mounted && localVideoRef.current) {
+        await attachStreamToVideo(localVideoRef.current, stream, true);
+      }
+      if (mounted && isTeacher && remoteVideoRef.current) {
+        await attachStreamToVideo(remoteVideoRef.current, stream, true);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isJoined, isTeacher]);
+
+  /* -------------------------- Join / Leave -------------------------- */
+  const joinClass = async (classId: string, asTeacher = false) => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("getUserMedia not supported in this browser");
+        return;
+      }
+
+      setError(null);
+
+      // Build constraints with selected device IDs if available
+      const videoConstraint: any = selectedVideoId ? { deviceId: { exact: selectedVideoId } } : { facingMode: "user" };
+      const audioConstraint: any = selectedAudioId ? { deviceId: { exact: selectedAudioId } } : true;
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: videoConstraint,
+        audio: audioConstraint,
+      });
+
+      // Save stream for toggles/recording
+      localStreamRef.current = stream;
+
+      // Try attach immediately if element exists (fast path). If element not present, the useEffect above will attach after render.
+      if (localVideoRef.current) {
+        await attachStreamToVideo(localVideoRef.current, stream, true);
+      }
+
+      if (asTeacher && remoteVideoRef.current) {
+        await attachStreamToVideo(remoteVideoRef.current, stream, true);
+      }
+
+      // attach to hidden audio element for mic test (muted by default)
+      if (localAudioRef.current) {
+        try {
+          localAudioRef.current.srcObject = stream;
+          localAudioRef.current.muted = true;
+        } catch (err) {
+          console.warn("attach to localAudioRef failed", err);
+        }
+      }
+
       await mockService.joinLiveClass(classId);
-      const classData = liveClasses.find(c => c.id === classId);
+      const classData = liveClasses.find((c) => c.id === classId) || null;
+
       if (classData) {
         setActiveClass(classData);
         setIsJoined(true);
+        setIsTeacher(asTeacher);
+        setIsVideoOn(true);
+        setIsAudioOn(true);
         setChatMessages([
           {
-            id: '1',
-            sender: 'System',
-            message: 'Welcome to the live class!',
-            timestamp: new Date().toISOString()
-          }
+            id: "1",
+            sender: "System",
+            message: `Welcome to the live class${asTeacher ? " (Teacher Mode)" : ""}!`,
+            timestamp: new Date().toISOString(),
+          },
         ]);
       }
-    } catch (error) {
-      console.error('Failed to join class:', error);
-      alert('Failed to join class: ' + (error as Error).message);
+    } catch (err: any) {
+      console.error("Failed to access camera/microphone:", err);
+      if (err?.name === "NotAllowedError" || err?.name === "SecurityError") {
+        alert("Permissions denied. Please allow camera & microphone for this site and try again.");
+      } else if (err?.name === "NotFoundError") {
+        alert("No camera/microphone found. Please connect a device and try again.");
+      } else {
+        alert("Failed to access camera/microphone. See console for details.");
+      }
+      setError("Camera/Microphone access denied");
     }
   };
 
   const leaveClass = () => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((t) => t.stop());
+      localStreamRef.current = null;
+    }
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
+    if (isRecording) stopRecording();
+
     setActiveClass(null);
     setIsJoined(false);
+    setIsTeacher(false);
     setChatMessages([]);
     setHandRaised(false);
+    setHasRecording(false);
+    setRecordingTime(0);
+    setIsVideoOn(true);
+    setIsAudioOn(true);
+  };
+
+  /* -------------------------- Toggles -------------------------- */
+  const toggleVideo = () => {
+    if (!localStreamRef.current) {
+      alert("No local stream available. Join the class first.");
+      return;
+    }
+    const videoTracks = localStreamRef.current.getVideoTracks();
+    if (!videoTracks.length) {
+      alert("No camera track available.");
+      return;
+    }
+    videoTracks.forEach((t) => (t.enabled = !t.enabled));
+    setIsVideoOn((p) => !p);
+  };
+
+  const toggleAudio = () => {
+    if (!localStreamRef.current) {
+      alert("No local stream available. Join the class first.");
+      return;
+    }
+    const audioTracks = localStreamRef.current.getAudioTracks();
+    if (!audioTracks.length) {
+      alert("No microphone track available.");
+      return;
+    }
+    audioTracks.forEach((t) => (t.enabled = !t.enabled));
+    setIsAudioOn((p) => !p);
+  };
+
+  const toggleHand = () => {
+    setHandRaised((prev) => !prev);
+    if (!handRaised) {
+      const handMessage: ChatMessage = {
+        id: Date.now().toString(),
+        sender: "System",
+        message: "You raised your hand",
+        timestamp: new Date().toISOString(),
+      };
+      setChatMessages((prev) => [...prev, handMessage]);
+    }
   };
 
   const sendChatMessage = () => {
     if (chatMessage.trim()) {
-      const newMessage = {
+      const newMessage: ChatMessage = {
         id: Date.now().toString(),
-        sender: 'You',
+        sender: isTeacher ? "Teacher" : "You",
         message: chatMessage,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-      setChatMessages(prev => [...prev, newMessage]);
-      setChatMessage('');
+      setChatMessages((prev) => [...prev, newMessage]);
+      setChatMessage("");
     }
   };
 
-  const toggleVideo = () => {
-    setIsVideoOn(!isVideoOn);
-  };
-
-  const toggleAudio = () => {
-    setIsAudioOn(!isAudioOn);
-  };
-
-  const toggleHand = () => {
-    setHandRaised(!handRaised);
-    if (!handRaised) {
-      const handMessage = {
-        id: Date.now().toString(),
-        sender: 'System',
-        message: 'You raised your hand',
-        timestamp: new Date().toISOString()
-      };
-      setChatMessages(prev => [...prev, handMessage]);
+  /* --------------------------- Mic Test --------------------------- */
+  const testMic = async () => {
+    if (!localStreamRef.current) {
+      alert("No local stream available. Join the class first (or start preview).");
+      return;
+    }
+    if (!localAudioRef.current) return;
+    try {
+      localAudioRef.current.muted = false;
+      await localAudioRef.current.play().catch(() => {});
+      // stop after 2 seconds
+      setTimeout(() => {
+        if (localAudioRef.current) {
+          localAudioRef.current.pause();
+          localAudioRef.current.muted = true;
+        }
+      }, 2000);
+    } catch (err) {
+      console.warn("Mic test failed", err);
     }
   };
 
+  /* -------------------------- Recording -------------------------- */
+  const startRecording = async () => {
+    try {
+      let stream: MediaStream | null = null;
+
+      if (recordingMode === "screen") {
+        // @ts-ignore
+        stream = await (navigator.mediaDevices as any).getDisplayMedia({ video: true, audio: true });
+        // try merge microphone audio track if available
+        try {
+          const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const micTrack = mic.getAudioTracks()[0];
+          if (micTrack && stream) {
+            (stream as MediaStream).addTrack(micTrack);
+          }
+        } catch {
+          // continue with screen audio only
+        }
+      } else {
+        stream = localStreamRef.current || (await navigator.mediaDevices.getUserMedia({ video: true, audio: true }));
+      }
+
+      recordedChunksRef.current = [];
+      const options: any = { mimeType: "video/webm;codecs=vp8,opus" };
+      if (!(MediaRecorder as any).isTypeSupported(options.mimeType)) options.mimeType = "video/webm";
+      if (!stream) {
+        throw new Error("No media stream available for recording");
+      }
+      mediaRecorderRef.current = new MediaRecorder(stream as MediaStream, options);
+
+      mediaRecorderRef.current.ondataavailable = (ev: BlobEvent) => {
+        if (ev.data && ev.data.size > 0) recordedChunksRef.current.push(ev.data);
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        setHasRecording(true);
+        // if we created a screen stream separate from localStreamRef, stop it
+        if (recordingMode === "screen" && stream && stream !== localStreamRef.current) {
+          stream.getTracks().forEach((t) => t.stop());
+        }
+      };
+
+      mediaRecorderRef.current.start(100);
+      setIsRecording(true);
+      setIsPaused(false);
+
+      intervalRef.current = window.setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000) as unknown as number;
+    } catch (err: any) {
+      console.error("Error starting recording:", err);
+      alert("Failed to start recording: " + (err?.message || err));
+    }
+  };
+
+  const pauseRecording = () => {
+    if (!mediaRecorderRef.current || !isRecording) return;
+    if (isPaused) {
+      mediaRecorderRef.current.resume();
+      intervalRef.current = window.setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000) as unknown as number;
+    } else {
+      mediaRecorderRef.current.pause();
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+    setIsPaused((p) => !p);
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
+    setIsPaused(false);
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const downloadRecording = () => {
+    if (!recordedChunksRef.current.length) {
+      alert("No recording available");
+      return;
+    }
+    const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `recording-${Date.now()}.webm`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const publishLesson = async () => {
+    if (!lessonTitle.trim()) {
+      alert("Lesson title is required");
+      return;
+    }
+    if (!recordedChunksRef.current.length) {
+      alert("No recording available to upload");
+      return;
+    }
+    setIsUploading(true);
+    setUploadProgress(0);
+    const progressInterval = window.setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return Math.min(100, prev + Math.random() * 15);
+      });
+    }, 200);
+
+    try {
+      const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+      await mockService.uploadRecording(lessonTitle, lessonDescription, blob, recordingMode === "screen" ? "screen" : "video");
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress(0);
+        alert("Lesson published successfully!");
+        setLessonTitle("");
+        setLessonDescription("");
+        setRecordingTime(0);
+        setCurrentSlide(1);
+        setHasRecording(false);
+        recordedChunksRef.current = [];
+      }, 1000);
+    } catch (err: any) {
+      clearInterval(progressInterval);
+      setIsUploading(false);
+      setUploadProgress(0);
+      alert("Upload failed: " + (err?.message || err));
+    }
+  };
+
+  const nextSlide = () => {
+    if (currentSlide < totalSlides) setCurrentSlide((s) => s + 1);
+  };
+
+  /* --------------------------- Render --------------------------- */
   if (isJoined && activeClass) {
     return (
-      <div className="h-screen bg-background flex flex-col">
+      <div className="flex flex-col h-screen bg-gray-900">
         {/* Class Header */}
-        <div className="bg-card border-b border-border p-4">
+        <div className="bg-gray-800 border-b border-gray-700 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-card-foreground">{activeClass.title}</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 className="text-lg font-semibold text-white">{activeClass.title}</h2>
+              <p className="text-sm text-gray-400 mt-1">
                 {activeClass.instructor} • {activeClass.participants} participants
+                {isTeacher && " • Teacher Mode"}
               </p>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium animate-pulse">
-                LIVE
-              </span>
-              <button
-                onClick={leaveClass}
-                className="bg-destructive text-destructive-foreground px-4 py-2 rounded-lg hover:bg-destructive/90 transition-colors flex items-center space-x-2"
-              >
+            <div className="flex items-center gap-2">
+              <span className="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-medium animate-pulse">LIVE</span>
+              <button onClick={leaveClass} className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors">
                 <PhoneOff size={16} />
                 <span>Leave</span>
               </button>
@@ -140,281 +619,268 @@ const LiveClassPage: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex">
+        <div className="flex flex-1">
           {/* Video Area */}
           <div className="flex-1 bg-black relative">
-            {/* Teacher Video (Placeholder) */}
             <div className="w-full h-full flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users size={48} />
+              {isTeacher ? (
+                <video ref={remoteVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
+              ) : (
+                <div className="text-center text-white">
+                  <div className="w-32 h-32 bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users size={48} />
+                  </div>
+                  <p className="text-lg font-medium">{activeClass.instructor}</p>
+                  <p className="text-sm text-gray-400 mt-1">Teaching: {activeClass.title}</p>
                 </div>
-                <p className="text-lg font-medium">{activeClass.instructor}</p>
-                <p className="text-sm text-gray-300">Teaching: {activeClass.title}</p>
-              </div>
+              )}
             </div>
 
-            {/* Student Video (Self) */}
-            <div className="absolute bottom-4 right-4 w-32 h-24 bg-gray-800 rounded-lg border-2 border-white overflow-hidden">
-              <div className="w-full h-full flex items-center justify-center">
-                {isVideoOn ? (
-                  <div className="text-white text-xs">Your Video</div>
-                ) : (
-                  <div className="text-white text-center">
-                    <VideoOff size={20} />
+            {/* Local Video */}
+            <div className="absolute bottom-4 right-4 w-48 h-36 bg-gray-800 rounded-lg border-2 border-gray-600 overflow-hidden shadow-2xl">
+              <video ref={localVideoRef} autoPlay playsInline muted className={`w-full h-full object-cover ${isVideoOn ? "block" : "hidden"}`} style={{ transform: "scaleX(-1)" }} />
+              {!isVideoOn && (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <div className="text-center">
+                    <VideoOff size={24} />
                     <div className="text-xs mt-1">Video Off</div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+              <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">{isTeacher ? "You (Teacher)" : "You"}</div>
             </div>
+
+            {/* Recording Indicator */}
+            {isRecording && (
+              <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-600 text-white px-3 py-2 rounded-lg">
+                <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+                <span className="font-medium">{isPaused ? "Recording Paused" : "Recording"} • {formatTime(recordingTime)}</span>
+              </div>
+            )}
 
             {/* Controls Overlay */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              <div className="flex items-center space-x-4 bg-black/50 backdrop-blur-sm rounded-full px-6 py-3">
-                <button
-                  onClick={toggleAudio}
-                  className={`p-3 rounded-full transition-colors ${
-                    isAudioOn 
-                      ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                      : 'bg-red-500 hover:bg-red-600 text-white'
-                  }`}
-                >
+              <div className="flex items-center gap-4 bg-black/50 backdrop-blur-lg rounded-full px-6 py-3">
+                <button onClick={toggleAudio} className={`p-3 rounded-full transition-colors ${isAudioOn ? "bg-gray-600 hover:bg-gray-700" : "bg-red-600 hover:bg-red-700"} text-white`}>
                   {isAudioOn ? <Mic size={20} /> : <MicOff size={20} />}
                 </button>
-                
-                <button
-                  onClick={toggleVideo}
-                  className={`p-3 rounded-full transition-colors ${
-                    isVideoOn 
-                      ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                      : 'bg-red-500 hover:bg-red-600 text-white'
-                  }`}
-                >
+
+                <button onClick={toggleVideo} className={`p-3 rounded-full transition-colors ${isVideoOn ? "bg-gray-600 hover:bg-gray-700" : "bg-red-600 hover:bg-red-700"} text-white`}>
                   {isVideoOn ? <Video size={20} /> : <VideoOff size={20} />}
                 </button>
-                
-                <button
-                  onClick={toggleHand}
-                  className={`p-3 rounded-full transition-colors ${
-                    handRaised 
-                      ? 'bg-yellow-500 hover:bg-yellow-600 text-white' 
-                      : 'bg-gray-700 hover:bg-gray-600 text-white'
-                  }`}
-                >
+
+                <button onClick={toggleHand} className={`p-3 rounded-full transition-colors ${handRaised ? "bg-yellow-600 hover:bg-yellow-700" : "bg-gray-600 hover:bg-gray-700"} text-white`}>
                   <Hand size={20} />
                 </button>
-                
-                <button className="p-3 rounded-full bg-gray-700 hover:bg-gray-600 text-white transition-colors">
+
+                <button
+                  onClick={async () => {
+                    try {
+                      // @ts-ignore
+                      const stream = await (navigator.mediaDevices as any).getDisplayMedia({ video: true });
+                      stream.getTracks()[0].onended = () => {
+                        console.log("Screen share ended");
+                      };
+                    } catch (err) {
+                      console.error("Error sharing screen:", err);
+                    }
+                  }}
+                  className="p-3 rounded-full bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                >
                   <Share size={20} />
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Chat Sidebar */}
-          <div className="w-80 bg-card border-l border-border flex flex-col">
-            {/* Chat Header */}
-            <div className="p-4 border-b border-border">
-              <h3 className="font-medium text-card-foreground flex items-center">
-                <MessageSquare size={16} className="mr-2" />
-                Class Chat
-              </h3>
-            </div>
+          {/* Sidebar */}
+          <div className="w-96 bg-gray-800 border-l border-gray-700 flex flex-col">
+            {/* Teacher Recording Controls */}
+            {isTeacher && (
+              <div className="p-4 border-b border-gray-700">
+                <h3 className="font-medium text-white mb-3 flex items-center">
+                  <Radio size={16} className="mr-2 text-red-500" />
+                  Recording Controls
+                </h3>
 
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {chatMessages.map((msg) => (
-                <div key={msg.id} className="text-sm">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className={`font-medium ${
-                      msg.sender === 'You' ? 'text-primary' : 
-                      msg.sender === 'System' ? 'text-muted-foreground' : 'text-card-foreground'
-                    }`}>
-                      {msg.sender}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(msg.timestamp).toLocaleTimeString()}
-                    </span>
+                {!isRecording && !hasRecording && (
+                  <div className="flex gap-2 mb-3">
+                    <button onClick={() => setRecordingMode("camera")} className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${recordingMode === "camera" ? "bg-blue-600 text-white" : "bg-gray-600 text-white hover:bg-gray-700"}`}>Camera</button>
+                    <button onClick={() => setRecordingMode("screen")} className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${recordingMode === "screen" ? "bg-blue-600 text-white" : "bg-gray-600 text-white hover:bg-gray-700"}`}>Screen</button>
                   </div>
-                  <p className="text-card-foreground">{msg.message}</p>
+                )}
+
+                <div className="flex gap-2">
+                  {!isRecording && !hasRecording && (
+                    <button onClick={startRecording} className="flex-1 px-3 py-2 rounded text-sm bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-1">
+                      <Radio size={14} />
+                      Start Recording
+                    </button>
+                  )}
+
+                  {isRecording && (
+                    <>
+                      <button onClick={pauseRecording} className="flex-1 px-3 py-2 rounded text-sm bg-yellow-600 text-white hover:bg-yellow-700 transition-colors flex items-center justify-center gap-1">
+                        {isPaused ? <Play size={14} /> : <Pause size={14} />}
+                        {isPaused ? "Resume" : "Pause"}
+                      </button>
+
+                      <button onClick={stopRecording} className="flex-1 px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center gap-1">
+                        <Square size={14} />
+                        Stop
+                      </button>
+                    </>
+                  )}
+
+                  {!isRecording && hasRecording && (
+                    <>
+                      <button onClick={() => { const blob = new Blob(recordedChunksRef.current, { type: "video/webm" }); const url = URL.createObjectURL(blob); const w = window.open(url, "_blank"); if (!w) alert("Popup blocked — download the recording instead"); }} className="flex-1 px-3 py-2 rounded text-sm bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center justify-center gap-1">
+                        <Play size={14} /> Play
+                      </button>
+
+                      <button onClick={downloadRecording} className="flex-1 px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center gap-1">
+                        <Download size={14} /> Download
+                      </button>
+                    </>
+                  )}
                 </div>
-              ))}
+
+                {/* Recording details */}
+                <div className="mt-3 text-sm text-gray-300">
+                  <div>Mode: <span className="font-medium">{recordingMode}</span></div>
+                  <div>Time: <span className="font-medium">{formatTime(recordingTime)}</span></div>
+                  <div>Slide: <span className="font-medium">{currentSlide}/{totalSlides}</span></div>
+                </div>
+
+                {/* Slide controls */}
+                <div className="mt-3 flex gap-2">
+                  <button onClick={() => setCurrentSlide((s) => Math.max(1, s - 1))} className="flex-1 px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700">Prev</button>
+                  <button onClick={nextSlide} className="flex-1 px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700">Next</button>
+                </div>
+
+                {/* Publish */}
+                <div className="mt-4">
+                  <input placeholder="Lesson title" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} className="w-full px-3 py-2 rounded bg-gray-700 text-white text-sm mb-2" />
+                  <textarea placeholder="Lesson description (optional)" value={lessonDescription} onChange={(e) => setLessonDescription(e.target.value)} className="w-full px-3 py-2 rounded bg-gray-700 text-white text-sm mb-2 h-20" />
+
+                  <div className="flex gap-2">
+                    <button onClick={publishLesson} disabled={isUploading} className="flex-1 px-3 py-2 rounded text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60">
+                      {isUploading ? `Uploading ${Math.round(uploadProgress)}%` : "Publish Lesson"}
+                    </button>
+                    <button onClick={() => { recordedChunksRef.current = []; setHasRecording(false); setRecordingTime(0); setLessonTitle(""); setLessonDescription(""); }} className="px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700">Clear</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Chat & Participants */}
+            <div className="flex-1 p-4 flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-white font-medium text-sm flex items-center gap-2"><MessageSquare size={14} /> Chat</h4>
+                <div className="text-xs text-gray-400">{activeClass.participants} participants</div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto mb-3 space-y-2" style={{ maxHeight: "40vh" }}>
+                {chatMessages.map((m) => (
+                  <div key={m.id} className={`p-2 rounded ${m.sender === "You" || m.sender === "Teacher" ? "bg-blue-600 text-white self-end" : "bg-gray-700 text-gray-200"}`}>
+                    <div className="text-xs opacity-80">{m.sender} • {new Date(m.timestamp).toLocaleTimeString()}</div>
+                    <div className="mt-1 text-sm">{m.message}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2">
+                <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") sendChatMessage(); }} placeholder="Type a message..." className="flex-1 px-3 py-2 rounded bg-gray-700 text-white text-sm" />
+                <button onClick={sendChatMessage} className="px-3 py-2 rounded bg-blue-600 text-white">Send</button>
+              </div>
             </div>
 
-            {/* Chat Input */}
-            <div className="p-4 border-t border-border">
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-                  placeholder="Type a message..."
-                  className="flex-1 px-3 py-2 border border-input rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-ring focus:border-transparent"
-                />
-                <button
-                  onClick={sendChatMessage}
-                  className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  Send
-                </button>
+            {/* Participants & quick actions */}
+            <div className="p-4 border-t border-gray-700 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Users size={18} />
+                <div>
+                  <div className="text-sm text-white">{activeClass.instructor}</div>
+                  <div className="text-xs text-gray-400">Instructor</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button onClick={() => alert("Raise hand toggled")} className="px-3 py-2 rounded bg-gray-600 text-white">Raise</button>
+                <button onClick={() => alert("Request to speak sent")} className="px-3 py-2 rounded bg-gray-600 text-white">Request</button>
               </div>
             </div>
           </div>
         </div>
+
+        {/* hidden audio element used for mic test */}
+        <audio ref={localAudioRef} style={{ display: "none" }} />
       </div>
     );
   }
 
+  // NOT JOINED: show class list + device selectors + join buttons
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-card-foreground mb-2 flex items-center">
-          <Monitor className="mr-2 text-primary" size={24} />
-          {t('live.title')}
-        </h2>
-        <p className="text-muted-foreground">{t('live.joinInteract', 'Join live classes and interact with teachers and classmates')}</p>
-      </div>
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-6xl mx-auto grid grid-cols-3 gap-6">
+        <div className="col-span-2 bg-white rounded-lg shadow p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Live Classes</h2>
+            <div className="text-sm text-gray-500">{loading ? "Loading..." : `${liveClasses.length} classes`}</div>
+          </div>
 
-      {/* Live Classes */}
-      {error && (
-        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-destructive/20 rounded-full flex items-center justify-center">
-                <Monitor className="text-destructive" size={20} />
+          {/* device selectors */}
+          <div className="mb-4 flex gap-2 items-center">
+            <div className="text-sm text-gray-600 mr-2">Devices:</div>
+
+            <select value={selectedVideoId ?? ""} onChange={(e) => setSelectedVideoId(e.target.value || null)} className="px-2 py-1 rounded bg-white border">
+              {videoDevices.length === 0 && <option value="">Default Camera</option>}
+              {videoDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Camera ${d.deviceId}`}</option>)}
+            </select>
+
+            <select value={selectedAudioId ?? ""} onChange={(e) => setSelectedAudioId(e.target.value || null)} className="px-2 py-1 rounded bg-white border">
+              {audioDevices.length === 0 && <option value="">Default Microphone</option>}
+              {audioDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Mic ${d.deviceId}`}</option>)}
+            </select>
+
+            <button onClick={() => enumerateDevices()} className="px-2 py-1 rounded bg-gray-200 text-sm">Refresh</button>
+
+            <button onClick={testMic} className="px-2 py-1 rounded bg-gray-600 text-white text-sm ml-auto">Test Mic (2s)</button>
+          </div>
+
+          {error && <div className="text-red-500 mb-3">{error}</div>}
+
+          <div className="space-y-3">
+            {liveClasses.map((c) => (
+              <div key={c.id} className="border rounded p-3 flex items-center justify-between">
+                <div>
+                  <div className="font-medium">{c.title}</div>
+                  <div className="text-xs text-gray-500">{c.instructor} • {c.status}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => joinClass(c.id, false)} className="px-3 py-2 rounded bg-blue-600 text-white">Join</button>
+                  <button onClick={() => joinClass(c.id, true)} className="px-3 py-2 rounded bg-green-600 text-white">Join as Teacher</button>
+                </div>
               </div>
-              <div>
-                <h3 className="font-medium text-destructive mb-1">
-                  {error.includes('offline') ? t('offline.workingOffline', 'Working Offline') : 'Connection Error'}
-                </h3>
-                <p className="text-sm text-destructive/80">
-                  {error.includes('offline') 
-                    ? t('offline.enableOnline', 'Enable online mode to view live classes')
-                    : error
-                  }
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={retryLoadClasses}
-              disabled={loading}
-              className="bg-destructive text-destructive-foreground px-4 py-2 rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? t('common.loading', 'Loading...') : t('common.retry', 'Retry')}
-            </button>
+            ))}
           </div>
         </div>
-      )}
 
-      <div className="space-y-4">
-        {!error && liveClasses.length === 0 && !loading ? (
-          <div className="bg-card border border-border rounded-lg p-8 text-center shadow-sm">
-            <Monitor size={48} className="mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium text-card-foreground mb-2">{t('live.noClasses', 'No Live Classes')}</h3>
-            <p className="text-muted-foreground">{t('live.checkLater', 'Check back later for scheduled live classes')}</p>
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="mb-3">
+            <h3 className="font-medium">Upcoming</h3>
+            <div className="text-sm text-gray-500 mt-1">Scheduled & ended classes</div>
           </div>
-        ) : !error && (
-          liveClasses.map((liveClass) => (
-            <div key={liveClass.id} className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-lg font-semibold text-card-foreground">{liveClass.title}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      liveClass.status === 'live' 
-                        ? 'bg-destructive/10 text-destructive animate-pulse'
-                        : liveClass.status === 'scheduled'
-                        ? 'bg-chart-2/10 text-chart-2'
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {liveClass.status === 'live' ? t('live.liveNow', 'LIVE NOW') : 
-                       liveClass.status === 'scheduled' ? t('live.scheduled', 'Scheduled') : t('live.ended', 'Ended')}
-                    </span>
-                  </div>
-                  
-                  <p className="text-muted-foreground mb-3">
-                    {t('live.instructor', 'Instructor')}: {liveClass.instructor}
-                  </p>
-                  
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    <span>
-                      {new Date(liveClass.startTime).toLocaleString()} - {new Date(liveClass.endTime).toLocaleString()}
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center">
-                      <Users size={14} className="mr-1" />
-                      {liveClass.participants}/{liveClass.maxParticipants}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="ml-4">
-                  {liveClass.status === 'live' || liveClass.status === 'scheduled' ? (
-                    <button
-                      onClick={() => joinClass(liveClass.id)}
-                      className="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-all shadow-sm flex items-center space-x-2"
-                    >
-                      <Phone size={16} />
-                      <span>{liveClass.status === 'live' ? t('live.joinClass') : 'Join When Live'}</span>
-                    </button>
-                  ) : (
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-2">{t('live.classEnded')}</p>
-                      {liveClass.recordingUrl && (
-                        <button className="bg-secondary text-secondary-foreground px-4 py-2 rounded-lg text-sm hover:bg-secondary/80 transition-all shadow-sm">
-                          {t('live.viewRecording', 'View Recording')}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
+          <div className="space-y-2">
+            {liveClasses.filter((l) => l.status !== "live").map((l) => (
+              <div key={l.id} className="flex items-center justify-between">
+                <div className="text-sm">{l.title}</div>
+                <div className="text-xs text-gray-500">{l.status}</div>
               </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Features Info */}
-      <div className="bg-muted rounded-lg p-6 shadow-sm">
-        <h3 className="font-medium text-card-foreground mb-4 flex items-center">
-          <Wifi className="mr-2 text-primary" size={20} />
-          {t('live.features', 'Live Class Features')}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex items-center space-x-3">
-            <Video className="text-chart-2" size={20} />
-            <div>
-              <p className="font-medium text-card-foreground text-sm">{t('live.hdVideo', 'HD Video & Audio')}</p>
-              <p className="text-xs text-muted-foreground">{t('live.clearComm', 'Crystal clear communication')}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <MessageSquare className="text-chart-2" size={20} />
-            <div>
-              <p className="font-medium text-card-foreground text-sm">{t('live.realTimeChat', 'Real-time Chat')}</p>
-              <p className="text-xs text-muted-foreground">{t('live.askQuestions', 'Ask questions instantly')}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Hand className="text-chart-1" size={20} />
-            <div>
-              <p className="font-medium text-card-foreground text-sm">{t('live.raiseHand')}</p>
-              <p className="text-xs text-muted-foreground">{t('live.getAttention', "Get teacher's attention")}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Share className="text-chart-1" size={20} />
-            <div>
-              <p className="font-medium text-card-foreground text-sm">{t('live.shareScreen')}</p>
-              <p className="text-xs text-muted-foreground">{t('live.shareWork', 'Share your work')}</p>
-            </div>
+            ))}
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default LiveClassPage;
+}

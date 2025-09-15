@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Bell, Sun, Moon, LogOut, GraduationCap, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { Bell, Sun, Moon, LogOut, X } from "lucide-react";
 import { mockService, Notification } from "./services/mockService";
-
 // Components
 import OfflineToggle from "./components/OfflineToggle";
 import Dashboard from "./pages/Dashboard";
@@ -28,7 +28,7 @@ interface User {
     email: string;
 }
 
-// Navigation Component
+// Navigation Component (unchanged)
 const Navigation: React.FC<{
     activeTab: string;
     onTabChange: (tab: string) => void;
@@ -64,8 +64,8 @@ const Navigation: React.FC<{
     const tabs = userRole === "teacher" ? teacherTabs : studentTabs;
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border z-50 shadow-lg">
-            <div className="flex justify-around items-center h-16 px-2">
+        <nav className="fixed bottom-0 left-0 right-0 india-gradient-smooth border-t border-border z-50 shadow-lg">
+            <div className="india-gradient-overlay flex justify-around items-center h-16 px-2">
                 {tabs.map(({ id, label }) => (
                     <button
                         key={id}
@@ -98,7 +98,7 @@ const Navigation: React.FC<{
     );
 };
 
-// Header Component
+// Header Component (minor unchanged)
 const Header: React.FC<{
     notifications: Notification[];
     onNotificationClick: () => void;
@@ -109,8 +109,8 @@ const Header: React.FC<{
     const unreadCount = notifications.filter((n) => !n.read).length;
 
     return (
-        <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-xl shadow-sm">
-            <div className="px-4 py-3">
+        <header className="sticky top-0 z-50 border-b border-border india-gradient-smooth">
+            <div className="india-gradient-overlay px-4 py-3">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                         <img
@@ -181,6 +181,8 @@ const Header: React.FC<{
                         <button
                             onClick={onNotificationClick}
                             className="relative p-2 rounded-lg hover:bg-muted transition-colors"
+                            aria-haspopup="dialog"
+                            aria-label="Open notifications"
                         >
                             <Bell size={16} className="text-muted-foreground" />
                             {unreadCount > 0 && (
@@ -196,65 +198,75 @@ const Header: React.FC<{
     );
 };
 
-// Notifications Panel
+// Notifications Panel (fixed: uses portal, higher z, escape to close, responsive width)
 const NotificationsPanel: React.FC<{
     notifications: Notification[];
     isOpen: boolean;
     onClose: () => void;
     onMarkRead: (id: string) => void;
-}> = ({ notifications, isOpen, onClose, onMarkRead }) => {
+    onMarkAllRead: () => Promise<void> | void;
+}> = ({ notifications, isOpen, onClose, onMarkRead, onMarkAllRead }) => {
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose}>
+    const panel = (
+        <div
+            className="fixed inset-0 z-[9999] bg-black/40 flex items-start justify-end p-4"
+            onClick={onClose}
+            aria-modal="true"
+            role="dialog"
+        >
             <div
-                className="fixed right-4 top-20 w-80 max-h-96 bg-card border border-border rounded-lg shadow-xl overflow-hidden"
+                className="w-full sm:w-96 max-h-[80vh] bg-card border border-border rounded-lg shadow-xl overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between p-4 border-b border-border">
-                    <h3 className="font-semibold text-card-foreground">
-                        Notifications
-                    </h3>
+                    <h3 className="font-semibold text-card-foreground">Notifications</h3>
                     <button
                         onClick={onClose}
                         className="p-1 hover:bg-muted rounded"
+                        aria-label="Close notifications"
                     >
                         <X size={16} />
                     </button>
                 </div>
 
-                <div className="max-h-80 overflow-y-auto">
+                <div className="max-h-[60vh] overflow-y-auto">
                     {notifications.length === 0 ? (
-                        <div className="p-4 text-center text-muted-foreground">
-                            No notifications
-                        </div>
+                        <div className="p-4 text-center text-muted-foreground">No notifications</div>
                     ) : (
                         notifications.map((notification) => (
                             <div
                                 key={notification.id}
-                                className={`p-4 border-b border-border cursor-pointer hover:bg-muted ${
+                                className={`p-4 border-b border-border cursor-pointer hover:bg-muted flex items-start justify-between ${
                                     !notification.read ? "bg-accent" : ""
                                 }`}
                                 onClick={() => onMarkRead(notification.id)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        onMarkRead(notification.id);
+                                    }
+                                }}
                             >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm text-card-foreground">
-                                            {notification.title}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {notification.message}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground mt-2">
-                                            {new Date(
-                                                notification.timestamp
-                                            ).toLocaleString()}
-                                        </p>
-                                    </div>
-                                    {!notification.read && (
-                                        <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1" />
-                                    )}
+                                <div className="flex-1">
+                                    <p className="font-medium text-sm text-card-foreground">{notification.title}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+                                    <p className="text-xs text-muted-foreground mt-2">{new Date(notification.timestamp).toLocaleString()}</p>
                                 </div>
+
+                                {!notification.read && (
+                                    <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1" />
+                                )}
                             </div>
                         ))
                     )}
@@ -263,11 +275,7 @@ const NotificationsPanel: React.FC<{
                 {notifications.some((n) => !n.read) && (
                     <div className="p-4 border-t border-border">
                         <button
-                            onClick={() =>
-                                notifications.forEach(
-                                    (n) => !n.read && onMarkRead(n.id)
-                                )
-                            }
+                            onClick={() => onMarkAllRead()}
                             className="w-full text-sm text-primary hover:text-primary/80 transition-colors"
                         >
                             Mark All Read
@@ -277,6 +285,9 @@ const NotificationsPanel: React.FC<{
             </div>
         </div>
     );
+
+    // Use portal so the panel always sits above other layout
+    return createPortal(panel, document.body);
 };
 
 // Main App Component
@@ -337,6 +348,20 @@ const AppContent: React.FC = () => {
         }
     };
 
+    const handleMarkAllRead = async () => {
+        const unread = notifications.filter((n) => !n.read);
+        if (unread.length === 0) return;
+
+        try {
+            // mark all on the mock service in parallel
+            await Promise.all(unread.map((n) => mockService.markNotificationRead(n.id)));
+            // update local state to reflect reads
+            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+        } catch (error) {
+            console.error("Failed to mark all notifications as read:", error);
+        }
+    };
+
     const sendTestNotification = async () => {
         try {
             await mockService.addNotification({
@@ -350,8 +375,8 @@ const AppContent: React.FC = () => {
                 read: false,
             });
 
-            const updatedNotifs = await mockService.getNotifications();
-            setNotifications(updatedNotifs);
+            const updated = await mockService.getNotifications();
+            setNotifications(updated);
         } catch (error) {
             console.error("Failed to send test notification:", error);
         }
@@ -404,8 +429,6 @@ const AppContent: React.FC = () => {
                 user={user}
             />
 
-           
-
             <main className="p-4">{renderContent()}</main>
 
             <Navigation
@@ -420,6 +443,7 @@ const AppContent: React.FC = () => {
                 isOpen={showNotifications}
                 onClose={() => setShowNotifications(false)}
                 onMarkRead={handleNotificationRead}
+                onMarkAllRead={handleMarkAllRead}
             />
         </div>
     );

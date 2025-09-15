@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 /* Geist Black/White Theme Variables */
+/* Root theme variables */
 :root {
   --background: rgb(252, 252, 252);
   --foreground: rgb(0, 0, 0);
@@ -99,58 +100,7 @@
   --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --font-serif: var(--font-serif);
-
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-
-  --shadow-2xs: var(--shadow-2xs);
-  --shadow-xs: var(--shadow-xs);
-  --shadow-sm: var(--shadow-sm);
-  --shadow: var(--shadow);
-  --shadow-md: var(--shadow-md);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-xl: var(--shadow-xl);
-  --shadow-2xl: var(--shadow-2xl);
-}
+/* Removed unsupported @theme block (Tailwind v3) */
 
 /* Base styles */
 * {
@@ -387,6 +337,7 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
 }
 
 .line-clamp-2 {
@@ -394,6 +345,7 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .line-clamp-3 {
@@ -401,6 +353,7 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
 /* Custom scrollbar */
@@ -725,4 +678,30 @@ select:focus {
   * {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
+}
+/* src/styles/flags.css (or add to globals.css) */
+
+/* Smooth blended gradient (saffron → white → green) */
+.india-gradient-smooth {
+  background-image: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #128807 100%);
+}
+
+/* Flag-like three stripes (hard edges) */
+.india-gradient-stripe {
+  background-image: linear-gradient(
+    90deg,
+    #FF9933 0%,
+    #FF9933 33.33%,
+    #FFFFFF 33.33%,
+    #FFFFFF 66.66%,
+    #128807 66.66%,
+    #128807 100%
+  );
+}
+
+/* Optional: small helper to keep rounded blur + contrast for inner area */
+.india-gradient-overlay {
+  /* keeps your content readable by adding a semi-opaque card over the gradient */
+  background: rgba(255,255,255,0.06); /* slight tint so text is legible */
+  backdrop-filter: blur(6px);
 }

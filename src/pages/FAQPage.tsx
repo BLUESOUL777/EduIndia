@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ChevronDown, ChevronUp, Phone, Mail, MessageCircle, HelpCircle, BookOpen, Headphones } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Phone, Mail, MessageCircle, HelpCircle } from 'lucide-react';
 import { useI18n } from '../hooks/useI18n';
 
 interface FAQItem {

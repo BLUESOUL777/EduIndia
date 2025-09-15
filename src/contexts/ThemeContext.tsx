@@ -22,10 +22,10 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [isDark, setIsDark] = useState(() => {
-    // Check localStorage first, then system preference
-    const saved = localStorage.getItem('eduindia_theme');
-    if (saved) {
-      return saved === 'dark';
+    // Check system preference on initial load
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      return mediaQuery.matches;
     }
     return false;
   });
@@ -41,25 +41,22 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       root.classList.remove('dark');
       root.style.colorScheme = 'light';
     }
-    
-    // Save to localStorage
-    localStorage.setItem('eduindia_theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
   // Listen for system theme changes
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => {
-      // Only auto-switch if user hasn't manually set a preference
-      const savedTheme = localStorage.getItem('eduindia_theme');
-      if (!savedTheme) {
-        setIsDark(e.matches);
-      }
+      // Update theme based on system preference
+      setIsDark(e.matches);
     };
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
+
   const toggleTheme = () => {
     setIsDark(prev => !prev);
   };

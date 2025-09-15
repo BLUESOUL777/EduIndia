@@ -15,15 +15,9 @@ import { useI18n } from "../hooks/useI18n";
 import RecorderStub from "./RecorderStub";
 
 const TeacherPanel: React.FC = () => {
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
+    // (upload states removed as currently unused)
     const [activeTab, setActiveTab] = useState("overview");
-    const [lectureForm, setLectureForm] = useState({
-        title: "",
-        subject: "",
-        description: "",
-        optimizeForLowBandwidth: true,
-    });
+    // (lectureForm state removed as currently unused)
     const { t } = useI18n();
 
     const uploadedLectures = [
@@ -104,33 +98,7 @@ const TeacherPanel: React.FC = () => {
         },
     ];
 
-    // Simulate lecture upload with progress
-    const simulateUpload = () => {
-        setIsUploading(true);
-        setUploadProgress(0);
-
-        const interval = setInterval(() => {
-            setUploadProgress((prev: number) => {
-                if (prev >= 100) {
-                    clearInterval(interval);
-                    setIsUploading(false);
-                    setTimeout(() => {
-                        alert(
-                            "Lecture uploaded successfully! Processing has started."
-                        );
-                    }, 500);
-                    setLectureForm({
-                        title: "",
-                        subject: "",
-                        description: "",
-                        optimizeForLowBandwidth: true,
-                    });
-                    return 100;
-                }
-                return prev + Math.random() * 10;
-            });
-        }, 300);
-    };
+    // (upload simulation removed)
 
     const renderOverview = () => (
         <div className="space-y-6">

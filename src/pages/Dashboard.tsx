@@ -270,7 +270,7 @@ Generated on: ${new Date().toLocaleString()}
             {t('dashboard.achievements')}
           </h3>
           <div className="space-y-3">
-            {student.badges.map((badge, index) => (
+            {student.badges.map((badge) => (
               <div 
                 key={badge.id} 
                 className={`flex items-center p-3 rounded-lg transition-all shadow-sm ${
