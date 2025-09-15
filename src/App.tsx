@@ -76,6 +76,11 @@ const Navigation: React.FC<{
                                 : "text-muted-foreground hover:text-primary hover:bg-muted hover:scale-105"
                         }`}
                     >
+                        <img
+                            src={`/icons/${id}.svg`}
+                            alt={`${label} icon`}
+                            className="w-6 h-6 mb-1"
+                        />
                         <span className="text-xs font-medium truncate max-w-full">
                             {label}
                         </span>
@@ -109,9 +114,9 @@ const Header: React.FC<{
                 <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                         <img
-                            src="/EduIndia-Logo.jpeg"
+                            src="/EduIndia-Logo.png"
                             alt="EduIndia Logo"
-                            className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center shadow-md"
+                            className="w-11 h-11 bg-gradient-to-br rounded-lg flex items-center justify-center"
                         />
                         <div>
                             <h1 className="text-lg font-semibold text-card-foreground flex items-center">
