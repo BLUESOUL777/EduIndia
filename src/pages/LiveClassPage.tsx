@@ -1,5 +1,5 @@
 // LiveClassPage.tsx
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Video,
   VideoOff,
@@ -16,16 +16,6 @@ import {
   Pause,
   Download,
 } from "lucide-react";
-
-/**
- * Full LiveClassPage component (single-file)
- * - device enumeration + selectors (requests permission once if labels hidden)
- * - getUserMedia with explicit deviceId constraints
- * - attach stream after DOM mount (fixes preview not showing)
- * - autoplay handling via loadedmetadata + try/catch
- * - mic test using hidden audio element
- * - recording (MediaRecorder)
- */
 
 /* ----------------------------- Types ----------------------------- */
 interface LiveClass {
@@ -179,11 +169,10 @@ export default function LiveClassPage(): JSX.Element {
   // This helper requests minimal permission and then re-enumerates devices so labels appear.
   const ensurePermissionsForDevices = async () => {
     try {
-      // Request minimal permission (camera+mic), then immediately stop tracks
       const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       s.getTracks().forEach((t) => t.stop());
     } catch (err) {
-      // ignore: user may cancel; labels will remain empty
+      // ignore
     }
   };
 
@@ -194,11 +183,9 @@ export default function LiveClassPage(): JSX.Element {
       const videos = devices.filter((d) => d.kind === "videoinput");
       const audios = devices.filter((d) => d.kind === "audioinput");
 
-      // if labels are empty, prompt for permissions once to reveal labels
       const needPermission = [...videos, ...audios].some((d) => !d.label);
       if (needPermission) {
         await ensurePermissionsForDevices();
-        // re-enumerate
         const devices2 = await navigator.mediaDevices.enumerateDevices();
         const videos2 = devices2.filter((d) => d.kind === "videoinput");
         const audios2 = devices2.filter((d) => d.kind === "audioinput");
@@ -225,14 +212,12 @@ export default function LiveClassPage(): JSX.Element {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Helper to attach and autoplay stream on a video element (wrapped play call)
   const attachStreamToVideo = async (el: HTMLVideoElement | null, stream: MediaStream | null, muted = true) => {
     if (!el || !stream) return;
     try {
       el.srcObject = stream;
       el.muted = muted;
 
-      // Try to play after metadata; autoplay may still be blocked for audio but muted videos usually play
       if (el.readyState >= 1) {
         await el.play().catch((err) => {
           console.warn("video.play() blocked (autoplay policy). User interaction needed.", err);
@@ -247,7 +232,6 @@ export default function LiveClassPage(): JSX.Element {
             resolve();
           };
           el.addEventListener("loadedmetadata", onMeta);
-          // safety timeout - resolve in case event never fires
           setTimeout(resolve, 500);
         });
       }
@@ -286,7 +270,6 @@ export default function LiveClassPage(): JSX.Element {
 
       setError(null);
 
-      // Build constraints with selected device IDs if available
       const videoConstraint: any = selectedVideoId ? { deviceId: { exact: selectedVideoId } } : { facingMode: "user" };
       const audioConstraint: any = selectedAudioId ? { deviceId: { exact: selectedAudioId } } : true;
 
@@ -295,10 +278,8 @@ export default function LiveClassPage(): JSX.Element {
         audio: audioConstraint,
       });
 
-      // Save stream for toggles/recording
       localStreamRef.current = stream;
 
-      // Try attach immediately if element exists (fast path). If element not present, the useEffect above will attach after render.
       if (localVideoRef.current) {
         await attachStreamToVideo(localVideoRef.current, stream, true);
       }
@@ -307,7 +288,6 @@ export default function LiveClassPage(): JSX.Element {
         await attachStreamToVideo(remoteVideoRef.current, stream, true);
       }
 
-      // attach to hidden audio element for mic test (muted by default)
       if (localAudioRef.current) {
         try {
           localAudioRef.current.srcObject = stream;
@@ -437,7 +417,6 @@ export default function LiveClassPage(): JSX.Element {
     try {
       localAudioRef.current.muted = false;
       await localAudioRef.current.play().catch(() => {});
-      // stop after 2 seconds
       setTimeout(() => {
         if (localAudioRef.current) {
           localAudioRef.current.pause();
@@ -457,7 +436,6 @@ export default function LiveClassPage(): JSX.Element {
       if (recordingMode === "screen") {
         // @ts-ignore
         stream = await (navigator.mediaDevices as any).getDisplayMedia({ video: true, audio: true });
-        // try merge microphone audio track if available
         try {
           const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
           const micTrack = mic.getAudioTracks()[0];
@@ -465,7 +443,7 @@ export default function LiveClassPage(): JSX.Element {
             (stream as MediaStream).addTrack(micTrack);
           }
         } catch {
-          // continue with screen audio only
+          // continue
         }
       } else {
         stream = localStreamRef.current || (await navigator.mediaDevices.getUserMedia({ video: true, audio: true }));
@@ -485,7 +463,6 @@ export default function LiveClassPage(): JSX.Element {
 
       mediaRecorderRef.current.onstop = () => {
         setHasRecording(true);
-        // if we created a screen stream separate from localStreamRef, stop it
         if (recordingMode === "screen" && stream && stream !== localStreamRef.current) {
           stream.getTracks().forEach((t) => t.stop());
         }
@@ -597,20 +574,20 @@ export default function LiveClassPage(): JSX.Element {
   /* --------------------------- Render --------------------------- */
   if (isJoined && activeClass) {
     return (
-      <div className="flex flex-col h-screen bg-gray-900">
+      <div className="flex flex-col h-screen bg-background text-foreground">
         {/* Class Header */}
-        <div className="bg-gray-800 border-b border-gray-700 p-4">
+        <div className="bg-popover border-b border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white">{activeClass.title}</h2>
-              <p className="text-sm text-gray-400 mt-1">
+              <h2 className="text-lg font-semibold text-foreground">{activeClass.title}</h2>
+              <p className="text-sm text-muted-foreground mt-1">
                 {activeClass.instructor} • {activeClass.participants} participants
                 {isTeacher && " • Teacher Mode"}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-medium animate-pulse">LIVE</span>
-              <button onClick={leaveClass} className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors">
+              <span className="bg-destructive text-destructive-foreground px-2 py-1 rounded-full text-xs font-medium animate-pulse">LIVE</span>
+              <button onClick={leaveClass} className="bg-destructive text-destructive-foreground px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-colors">
                 <PhoneOff size={16} />
                 <span>Leave</span>
               </button>
@@ -621,55 +598,55 @@ export default function LiveClassPage(): JSX.Element {
         {/* Main Content */}
         <div className="flex flex-1">
           {/* Video Area */}
-          <div className="flex-1 bg-black relative">
+          <div className="flex-1 bg-card relative">
             <div className="w-full h-full flex items-center justify-center">
               {isTeacher ? (
                 <video ref={remoteVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
               ) : (
-                <div className="text-center text-white">
-                  <div className="w-32 h-32 bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="text-center text-foreground">
+                  <div className="w-32 h-32 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
                     <Users size={48} />
                   </div>
                   <p className="text-lg font-medium">{activeClass.instructor}</p>
-                  <p className="text-sm text-gray-400 mt-1">Teaching: {activeClass.title}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Teaching: {activeClass.title}</p>
                 </div>
               )}
             </div>
 
             {/* Local Video */}
-            <div className="absolute bottom-4 right-4 w-48 h-36 bg-gray-800 rounded-lg border-2 border-gray-600 overflow-hidden shadow-2xl">
+            <div className="absolute bottom-4 right-4 w-48 h-36 bg-card rounded-lg border-2 border-border overflow-hidden shadow-2xl">
               <video ref={localVideoRef} autoPlay playsInline muted className={`w-full h-full object-cover ${isVideoOn ? "block" : "hidden"}`} style={{ transform: "scaleX(-1)" }} />
               {!isVideoOn && (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
                     <VideoOff size={24} />
                     <div className="text-xs mt-1">Video Off</div>
                   </div>
                 </div>
               )}
-              <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">{isTeacher ? "You (Teacher)" : "You"}</div>
+              <div className="absolute top-2 left-2 bg-popover text-foreground text-xs px-2 py-1 rounded">{isTeacher ? "You (Teacher)" : "You"}</div>
             </div>
 
             {/* Recording Indicator */}
             {isRecording && (
-              <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-600 text-white px-3 py-2 rounded-lg">
-                <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+              <div className="absolute top-4 left-4 flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-2 rounded-lg">
+                <div className="w-3 h-3 bg-destructive-foreground rounded-full animate-pulse" />
                 <span className="font-medium">{isPaused ? "Recording Paused" : "Recording"} • {formatTime(recordingTime)}</span>
               </div>
             )}
 
             {/* Controls Overlay */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              <div className="flex items-center gap-4 bg-black/50 backdrop-blur-lg rounded-full px-6 py-3">
-                <button onClick={toggleAudio} className={`p-3 rounded-full transition-colors ${isAudioOn ? "bg-gray-600 hover:bg-gray-700" : "bg-red-600 hover:bg-red-700"} text-white`}>
+              <div className="flex items-center gap-4 bg-popover rounded-full px-6 py-3">
+                <button onClick={toggleAudio} className={`p-3 rounded-full transition-colors ${isAudioOn ? "bg-secondary" : "bg-destructive"} text-foreground`}>
                   {isAudioOn ? <Mic size={20} /> : <MicOff size={20} />}
                 </button>
 
-                <button onClick={toggleVideo} className={`p-3 rounded-full transition-colors ${isVideoOn ? "bg-gray-600 hover:bg-gray-700" : "bg-red-600 hover:bg-red-700"} text-white`}>
+                <button onClick={toggleVideo} className={`p-3 rounded-full transition-colors ${isVideoOn ? "bg-secondary" : "bg-destructive"} text-foreground`}>
                   {isVideoOn ? <Video size={20} /> : <VideoOff size={20} />}
                 </button>
 
-                <button onClick={toggleHand} className={`p-3 rounded-full transition-colors ${handRaised ? "bg-yellow-600 hover:bg-yellow-700" : "bg-gray-600 hover:bg-gray-700"} text-white`}>
+                <button onClick={toggleHand} className={`p-3 rounded-full transition-colors ${handRaised ? "bg-primary" : "bg-secondary"} text-foreground`}>
                   <Hand size={20} />
                 </button>
 
@@ -685,7 +662,7 @@ export default function LiveClassPage(): JSX.Element {
                       console.error("Error sharing screen:", err);
                     }
                   }}
-                  className="p-3 rounded-full bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                  className="p-3 rounded-full bg-secondary text-foreground transition-colors"
                 >
                   <Share size={20} />
                 </button>
@@ -694,25 +671,25 @@ export default function LiveClassPage(): JSX.Element {
           </div>
 
           {/* Sidebar */}
-          <div className="w-96 bg-gray-800 border-l border-gray-700 flex flex-col">
+          <div className="w-96 bg-popover border-l border-border flex flex-col">
             {/* Teacher Recording Controls */}
             {isTeacher && (
-              <div className="p-4 border-b border-gray-700">
-                <h3 className="font-medium text-white mb-3 flex items-center">
-                  <Radio size={16} className="mr-2 text-red-500" />
+              <div className="p-4 border-b border-border">
+                <h3 className="font-medium text-foreground mb-3 flex items-center">
+                  <Radio size={16} className="mr-2 text-destructive" />
                   Recording Controls
                 </h3>
 
                 {!isRecording && !hasRecording && (
                   <div className="flex gap-2 mb-3">
-                    <button onClick={() => setRecordingMode("camera")} className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${recordingMode === "camera" ? "bg-blue-600 text-white" : "bg-gray-600 text-white hover:bg-gray-700"}`}>Camera</button>
-                    <button onClick={() => setRecordingMode("screen")} className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${recordingMode === "screen" ? "bg-blue-600 text-white" : "bg-gray-600 text-white hover:bg-gray-700"}`}>Screen</button>
+                    <button onClick={() => setRecordingMode("camera")} className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${recordingMode === "camera" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>Camera</button>
+                    <button onClick={() => setRecordingMode("screen")} className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${recordingMode === "screen" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>Screen</button>
                   </div>
                 )}
 
                 <div className="flex gap-2">
                   {!isRecording && !hasRecording && (
-                    <button onClick={startRecording} className="flex-1 px-3 py-2 rounded text-sm bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-1">
+                    <button onClick={startRecording} className="flex-1 px-3 py-2 rounded text-sm bg-destructive text-destructive-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
                       <Radio size={14} />
                       Start Recording
                     </button>
@@ -720,12 +697,12 @@ export default function LiveClassPage(): JSX.Element {
 
                   {isRecording && (
                     <>
-                      <button onClick={pauseRecording} className="flex-1 px-3 py-2 rounded text-sm bg-yellow-600 text-white hover:bg-yellow-700 transition-colors flex items-center justify-center gap-1">
+                      <button onClick={pauseRecording} className="flex-1 px-3 py-2 rounded text-sm bg-primary text-primary-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
                         {isPaused ? <Play size={14} /> : <Pause size={14} />}
                         {isPaused ? "Resume" : "Pause"}
                       </button>
 
-                      <button onClick={stopRecording} className="flex-1 px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center gap-1">
+                      <button onClick={stopRecording} className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
                         <Square size={14} />
                         Stop
                       </button>
@@ -734,11 +711,11 @@ export default function LiveClassPage(): JSX.Element {
 
                   {!isRecording && hasRecording && (
                     <>
-                      <button onClick={() => { const blob = new Blob(recordedChunksRef.current, { type: "video/webm" }); const url = URL.createObjectURL(blob); const w = window.open(url, "_blank"); if (!w) alert("Popup blocked — download the recording instead"); }} className="flex-1 px-3 py-2 rounded text-sm bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center justify-center gap-1">
+                      <button onClick={() => { const blob = new Blob(recordedChunksRef.current, { type: "video/webm" }); const url = URL.createObjectURL(blob); const w = window.open(url, "_blank"); if (!w) alert("Popup blocked — download the recording instead"); }} className="flex-1 px-3 py-2 rounded text-sm bg-accent text-accent-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
                         <Play size={14} /> Play
                       </button>
 
-                      <button onClick={downloadRecording} className="flex-1 px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center gap-1">
+                      <button onClick={downloadRecording} className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
                         <Download size={14} /> Download
                       </button>
                     </>
@@ -746,28 +723,28 @@ export default function LiveClassPage(): JSX.Element {
                 </div>
 
                 {/* Recording details */}
-                <div className="mt-3 text-sm text-gray-300">
-                  <div>Mode: <span className="font-medium">{recordingMode}</span></div>
-                  <div>Time: <span className="font-medium">{formatTime(recordingTime)}</span></div>
-                  <div>Slide: <span className="font-medium">{currentSlide}/{totalSlides}</span></div>
+                <div className="mt-3 text-sm text-muted-foreground">
+                  <div>Mode: <span className="font-medium text-foreground">{recordingMode}</span></div>
+                  <div>Time: <span className="font-medium text-foreground">{formatTime(recordingTime)}</span></div>
+                  <div>Slide: <span className="font-medium text-foreground">{currentSlide}/{totalSlides}</span></div>
                 </div>
 
                 {/* Slide controls */}
                 <div className="mt-3 flex gap-2">
-                  <button onClick={() => setCurrentSlide((s) => Math.max(1, s - 1))} className="flex-1 px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700">Prev</button>
-                  <button onClick={nextSlide} className="flex-1 px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700">Next</button>
+                  <button onClick={() => setCurrentSlide((s) => Math.max(1, s - 1))} className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90">Prev</button>
+                  <button onClick={nextSlide} className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90">Next</button>
                 </div>
 
                 {/* Publish */}
                 <div className="mt-4">
-                  <input placeholder="Lesson title" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} className="w-full px-3 py-2 rounded bg-gray-700 text-white text-sm mb-2" />
-                  <textarea placeholder="Lesson description (optional)" value={lessonDescription} onChange={(e) => setLessonDescription(e.target.value)} className="w-full px-3 py-2 rounded bg-gray-700 text-white text-sm mb-2 h-20" />
+                  <input placeholder="Lesson title" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} className="w-full px-3 py-2 rounded bg-card text-foreground text-sm mb-2" />
+                  <textarea placeholder="Lesson description (optional)" value={lessonDescription} onChange={(e) => setLessonDescription(e.target.value)} className="w-full px-3 py-2 rounded bg-card text-foreground text-sm mb-2 h-20" />
 
                   <div className="flex gap-2">
-                    <button onClick={publishLesson} disabled={isUploading} className="flex-1 px-3 py-2 rounded text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60">
+                    <button onClick={publishLesson} disabled={isUploading} className="flex-1 px-3 py-2 rounded text-sm bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60">
                       {isUploading ? `Uploading ${Math.round(uploadProgress)}%` : "Publish Lesson"}
                     </button>
-                    <button onClick={() => { recordedChunksRef.current = []; setHasRecording(false); setRecordingTime(0); setLessonTitle(""); setLessonDescription(""); }} className="px-3 py-2 rounded text-sm bg-gray-600 text-white hover:bg-gray-700">Clear</button>
+                    <button onClick={() => { recordedChunksRef.current = []; setHasRecording(false); setRecordingTime(0); setLessonTitle(""); setLessonDescription(""); }} className="px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90">Clear</button>
                   </div>
                 </div>
               </div>
@@ -776,13 +753,13 @@ export default function LiveClassPage(): JSX.Element {
             {/* Chat & Participants */}
             <div className="flex-1 p-4 flex flex-col overflow-hidden">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-white font-medium text-sm flex items-center gap-2"><MessageSquare size={14} /> Chat</h4>
-                <div className="text-xs text-gray-400">{activeClass.participants} participants</div>
+                <h4 className="text-foreground font-medium text-sm flex items-center gap-2"><MessageSquare size={14} /> Chat</h4>
+                <div className="text-xs text-muted-foreground">{activeClass.participants} participants</div>
               </div>
 
               <div className="flex-1 overflow-y-auto mb-3 space-y-2" style={{ maxHeight: "40vh" }}>
                 {chatMessages.map((m) => (
-                  <div key={m.id} className={`p-2 rounded ${m.sender === "You" || m.sender === "Teacher" ? "bg-blue-600 text-white self-end" : "bg-gray-700 text-gray-200"}`}>
+                  <div key={m.id} className={`p-2 rounded ${m.sender === "You" || m.sender === "Teacher" ? "bg-primary text-primary-foreground self-end" : "bg-secondary text-muted-foreground"}`}>
                     <div className="text-xs opacity-80">{m.sender} • {new Date(m.timestamp).toLocaleTimeString()}</div>
                     <div className="mt-1 text-sm">{m.message}</div>
                   </div>
@@ -790,24 +767,24 @@ export default function LiveClassPage(): JSX.Element {
               </div>
 
               <div className="flex gap-2">
-                <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") sendChatMessage(); }} placeholder="Type a message..." className="flex-1 px-3 py-2 rounded bg-gray-700 text-white text-sm" />
-                <button onClick={sendChatMessage} className="px-3 py-2 rounded bg-blue-600 text-white">Send</button>
+                <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") sendChatMessage(); }} placeholder="Type a message..." className="flex-1 px-3 py-2 rounded bg-card text-foreground text-sm" />
+                <button onClick={sendChatMessage} className="px-3 py-2 rounded bg-primary text-primary-foreground">Send</button>
               </div>
             </div>
 
             {/* Participants & quick actions */}
-            <div className="p-4 border-t border-gray-700 flex items-center justify-between">
+            <div className="p-4 border-t border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Users size={18} />
                 <div>
-                  <div className="text-sm text-white">{activeClass.instructor}</div>
-                  <div className="text-xs text-gray-400">Instructor</div>
+                  <div className="text-sm text-foreground">{activeClass.instructor}</div>
+                  <div className="text-xs text-muted-foreground">Instructor</div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <button onClick={() => alert("Raise hand toggled")} className="px-3 py-2 rounded bg-gray-600 text-white">Raise</button>
-                <button onClick={() => alert("Request to speak sent")} className="px-3 py-2 rounded bg-gray-600 text-white">Request</button>
+                <button onClick={() => alert("Raise hand toggled")} className="px-3 py-2 rounded bg-secondary text-foreground">Raise</button>
+                <button onClick={() => alert("Request to speak sent")} className="px-3 py-2 rounded bg-secondary text-foreground">Request</button>
               </div>
             </div>
           </div>
@@ -821,61 +798,61 @@ export default function LiveClassPage(): JSX.Element {
 
   // NOT JOINED: show class list + device selectors + join buttons
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-background text-foreground p-6">
       <div className="max-w-6xl mx-auto grid grid-cols-3 gap-6">
-        <div className="col-span-2 bg-white rounded-lg shadow p-4">
+        <div className="col-span-2 bg-card rounded-lg shadow p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Live Classes</h2>
-            <div className="text-sm text-gray-500">{loading ? "Loading..." : `${liveClasses.length} classes`}</div>
+            <h2 className="text-lg font-semibold text-foreground">Live Classes</h2>
+            <div className="text-sm text-muted-foreground">{loading ? "Loading..." : `${liveClasses.length} classes`}</div>
           </div>
 
           {/* device selectors */}
           <div className="mb-4 flex gap-2 items-center">
-            <div className="text-sm text-gray-600 mr-2">Devices:</div>
+            <div className="text-sm text-muted-foreground mr-2">Devices:</div>
 
-            <select value={selectedVideoId ?? ""} onChange={(e) => setSelectedVideoId(e.target.value || null)} className="px-2 py-1 rounded bg-white border">
+            <select value={selectedVideoId ?? ""} onChange={(e) => setSelectedVideoId(e.target.value || null)} className="px-2 py-1 rounded bg-card border border-border">
               {videoDevices.length === 0 && <option value="">Default Camera</option>}
               {videoDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Camera ${d.deviceId}`}</option>)}
             </select>
 
-            <select value={selectedAudioId ?? ""} onChange={(e) => setSelectedAudioId(e.target.value || null)} className="px-2 py-1 rounded bg-white border">
+            <select value={selectedAudioId ?? ""} onChange={(e) => setSelectedAudioId(e.target.value || null)} className="px-2 py-1 rounded bg-card border border-border">
               {audioDevices.length === 0 && <option value="">Default Microphone</option>}
               {audioDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Mic ${d.deviceId}`}</option>)}
             </select>
 
-            <button onClick={() => enumerateDevices()} className="px-2 py-1 rounded bg-gray-200 text-sm">Refresh</button>
+            <button onClick={() => enumerateDevices()} className="px-2 py-1 rounded bg-secondary text-foreground text-sm">Refresh</button>
 
-            <button onClick={testMic} className="px-2 py-1 rounded bg-gray-600 text-white text-sm ml-auto">Test Mic (2s)</button>
+            <button onClick={testMic} className="px-2 py-1 rounded bg-secondary text-foreground text-sm ml-auto">Test Mic (2s)</button>
           </div>
 
-          {error && <div className="text-red-500 mb-3">{error}</div>}
+          {error && <div className="text-destructive mb-3">{error}</div>}
 
           <div className="space-y-3">
             {liveClasses.map((c) => (
-              <div key={c.id} className="border rounded p-3 flex items-center justify-between">
+              <div key={c.id} className="border rounded p-3 flex items-center justify-between border-border">
                 <div>
-                  <div className="font-medium">{c.title}</div>
-                  <div className="text-xs text-gray-500">{c.instructor} • {c.status}</div>
+                  <div className="font-medium text-foreground">{c.title}</div>
+                  <div className="text-xs text-muted-foreground">{c.instructor} • {c.status}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => joinClass(c.id, false)} className="px-3 py-2 rounded bg-blue-600 text-white">Join</button>
-                  <button onClick={() => joinClass(c.id, true)} className="px-3 py-2 rounded bg-green-600 text-white">Join as Teacher</button>
+                  <button onClick={() => joinClass(c.id, false)} className="px-3 py-2 rounded bg-primary text-primary-foreground">Join</button>
+                  <button onClick={() => joinClass(c.id, true)} className="px-3 py-2 rounded bg-accent text-accent-foreground">Join as Teacher</button>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-card rounded-lg shadow p-4">
           <div className="mb-3">
-            <h3 className="font-medium">Upcoming</h3>
-            <div className="text-sm text-gray-500 mt-1">Scheduled & ended classes</div>
+            <h3 className="font-medium text-foreground">Upcoming</h3>
+            <div className="text-sm text-muted-foreground mt-1">Scheduled & ended classes</div>
           </div>
           <div className="space-y-2">
             {liveClasses.filter((l) => l.status !== "live").map((l) => (
               <div key={l.id} className="flex items-center justify-between">
-                <div className="text-sm">{l.title}</div>
-                <div className="text-xs text-gray-500">{l.status}</div>
+                <div className="text-sm text-foreground">{l.title}</div>
+                <div className="text-xs text-muted-foreground">{l.status}</div>
               </div>
             ))}
           </div>

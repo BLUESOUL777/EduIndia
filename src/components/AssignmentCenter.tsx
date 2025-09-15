@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Upload, FileText, CheckCircle, Clock, AlertCircle, Star, Camera, Paperclip } from 'lucide-react';
 import { useI18n } from '../hooks/useI18n';
 
@@ -7,6 +7,10 @@ const AssignmentCenter: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const uploadIntervalRef = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const { t } = useI18n();
 
   const assignments = [
@@ -48,24 +52,84 @@ const AssignmentCenter: React.FC = () => {
     }
   ];
 
-  // Simulate file upload with progress
-  const simulateUpload = () => {
+  // Helper: clear any existing simulated upload interval
+  const clearUploadInterval = () => {
+    if (uploadIntervalRef.current !== null) {
+      clearInterval(uploadIntervalRef.current);
+      uploadIntervalRef.current = null;
+    }
+  };
+
+  // Simulate file upload with progress (keeps original behavior but tied to an actual File)
+  const simulateUploadForFile = (file: File | null) => {
+    clearUploadInterval();
     setIsUploading(true);
     setUploadProgress(0);
-    
-    const interval = setInterval(() => {
+
+    // show file name if provided
+    if (file) {
+      setSelectedFileName(file.name);
+    }
+
+    uploadIntervalRef.current = window.setInterval(() => {
       setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
+        // make progress speed slightly related to size (bigger file => slightly slower increments)
+        const sizeFactor = file ? Math.min(4, Math.max(1, file.size / (1024 * 1024))) : 1; // 1..4
+        const increment = Math.random() * (12 / sizeFactor) + 6; // dynamic increment
+
+        const next = prev + increment;
+        if (next >= 100) {
+          clearUploadInterval();
+          setUploadProgress(100);
           setIsUploading(false);
+          // reset file input so same file can be chosen again later
+          if (fileInputRef.current) fileInputRef.current.value = '';
           setTimeout(() => {
             alert('Assignment uploaded successfully! AI review has started.');
-          }, 500);
+            // Optionally, you could also update assignments state here to mark pending submission, etc.
+          }, 400);
           return 100;
         }
-        return prev + Math.random() * 15;
+        return next;
       });
     }, 200);
+  };
+
+  // existing simulateUpload preserved for "Take Photo" button (no file)
+  const simulateUpload = () => {
+    // clear selected file name when simulated camera upload used
+    setSelectedFileName(null);
+    simulateUploadForFile(null);
+  };
+
+  // handle file input change (browse)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    // validate file type + size (max 10MB)
+    const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+    const maxSize = 10 * 1024 * 1024;
+    if (!allowed.includes(file.type)) {
+      alert('Unsupported file type. Allowed: PDF, DOC, DOCX, JPG, PNG.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    if (file.size > maxSize) {
+      alert('File too large. Maximum allowed size is 10MB.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    simulateUploadForFile(file);
+  };
+
+  // trigger native file picker when "Browse Files" clicked
+  const handleBrowseClick = () => {
+    if (isUploading) return;
+    fileInputRef.current?.click();
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -82,7 +146,29 @@ const AssignmentCenter: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    simulateUpload();
+
+    const dt = e.dataTransfer;
+    if (!dt || !dt.files || dt.files.length === 0) {
+      // no files -> fallback to original simulateUpload
+      simulateUpload();
+      return;
+    }
+
+    const file = dt.files[0];
+
+    // same validation as browse
+    const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+    const maxSize = 10 * 1024 * 1024;
+    if (!allowed.includes(file.type)) {
+      alert('Unsupported file type. Allowed: PDF, DOC, DOCX, JPG, PNG.');
+      return;
+    }
+    if (file.size > maxSize) {
+      alert('File too large. Maximum allowed size is 10MB.');
+      return;
+    }
+
+    simulateUploadForFile(file);
   };
 
   const getStatusIcon = (status: string) => {
@@ -120,13 +206,22 @@ const AssignmentCenter: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* invisible/native file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+
       {/* Upload Assignment */}
       <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-card-foreground mb-6 flex items-center">
           <Upload className="mr-2" size={20} />
           {t('assignments.uploadFile')}
         </h2>
-        
+
         <div
           className={`border-2 border-dashed rounded-xl p-8 text-center transition-all shadow-sm ${
             dragActive
@@ -137,23 +232,32 @@ const AssignmentCenter: React.FC = () => {
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
+          role="button"
+          aria-label="Upload area"
         >
           <FileText className="mx-auto mb-4 text-muted-foreground" size={48} />
           <p className="text-muted-foreground mb-4">
             {t('assignments.dropFile', 'Drop your assignment file here, or choose an option below')}
           </p>
-          
+
+          {/* show selected file name */}
+          {selectedFileName && (
+            <p className="text-sm text-foreground mb-4">
+              <strong>Selected:</strong> {selectedFileName}
+            </p>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button 
-              onClick={simulateUpload}
+            <button
+              onClick={handleBrowseClick}
               disabled={isUploading}
               className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 font-medium flex items-center justify-center"
             >
               <Paperclip size={16} className="mr-2" />
               {isUploading ? t('common.uploading', 'Uploading...') : t('assignments.browseFiles', 'Browse Files')}
             </button>
-            
-            <button 
+
+            <button
               onClick={simulateUpload}
               disabled={isUploading}
               className="bg-chart-2 text-primary-foreground px-6 py-3 rounded-lg hover:bg-chart-2/90 transition-all shadow-sm disabled:opacity-50 font-medium flex items-center justify-center"
@@ -162,16 +266,16 @@ const AssignmentCenter: React.FC = () => {
               {t('assignments.takePhoto')}
             </button>
           </div>
-          
+
           <p className="text-xs text-muted-foreground mt-4">
             {t('assignments.supportedFormats', 'Supports PDF, DOC, DOCX, JPG, PNG (Max 10MB)')}
           </p>
-          
+
           {/* Upload Progress */}
           {isUploading && (
             <div className="mt-6">
               <div className="w-full bg-muted rounded-full h-2">
-                <div 
+                <div
                   className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
@@ -206,8 +310,8 @@ const AssignmentCenter: React.FC = () => {
         </h3>
         <div className="space-y-4">
           {assignments.map((assignment) => (
-            <div 
-              key={assignment.id} 
+            <div
+              key={assignment.id}
               className="p-6 bg-muted rounded-xl border border-border hover:shadow-md transition-all duration-200 cursor-pointer"
               onClick={() => setSelectedAssignment(selectedAssignment === assignment.id.toString() ? null : assignment.id.toString())}
             >
@@ -221,7 +325,7 @@ const AssignmentCenter: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-3">
                     <span>{assignment.subject}</span>
                     <span>•</span>
@@ -233,7 +337,7 @@ const AssignmentCenter: React.FC = () => {
                       </>
                     )}
                   </div>
-                  
+
                   {assignment.aiScore && (
                     <div className="flex items-center mb-3">
                       <span className="text-sm text-muted-foreground mr-3">{t('assignments.aiScore', 'AI Score')}:</span>
@@ -250,7 +354,7 @@ const AssignmentCenter: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   {assignment.feedback && selectedAssignment === assignment.id.toString() && (
                     <div className="mt-4 p-4 bg-chart-2/10 rounded-lg border-l-4 border-chart-2">
                       <p className="text-sm text-card-foreground">
@@ -262,7 +366,7 @@ const AssignmentCenter: React.FC = () => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex items-center ml-4">
                   {getStatusIcon(assignment.status)}
                   <span className={`ml-2 text-sm font-medium px-3 py-1 rounded-full shadow-sm ${getStatusColor(assignment.status)}`}>
