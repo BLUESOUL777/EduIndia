@@ -133,8 +133,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                             onClick={() => setSelectedRole("student")}
                             className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                                 selectedRole === "student"
-                                    ? "border-primary bg-accent text-primary"
-                                    : "border-border hover:border-muted-foreground text-muted-foreground"
+                                    ? "border-primary bg-primary/20 text-primary shadow-lg scale-105"
+                                    : "border-border hover:border-muted-foreground text-muted-foreground hover:bg-primary/5"
                             }`}
                         >
                             <User size={32} className="mx-auto mb-2" />
@@ -150,8 +150,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                             onClick={() => setSelectedRole("teacher")}
                             className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                                 selectedRole === "teacher"
-                                    ? "border-primary bg-accent text-primary"
-                                    : "border-border hover:border-muted-foreground text-muted-foreground"
+                                    ? "border-primary bg-primary/20 text-primary shadow-lg scale-105"
+                                    : "border-border hover:border-muted-foreground text-muted-foreground hover:bg-primary/5"
                             }`}
                         >
                             <GraduationCap size={32} className="mx-auto mb-2" />

@@ -72,8 +72,8 @@ const Navigation: React.FC<{
                         onClick={() => onTabChange(id)}
                         className={`flex flex-col items-center justify-center p-2 min-w-0 flex-1 rounded-xl transition-all duration-200 ${
                             activeTab === id
-                                ? "text-primary bg-accent scale-105"
-                                : "text-muted-foreground hover:text-primary hover:bg-muted hover:scale-105"
+                                ? "text-black bg-accent scale-105"
+                                : "text-black/70 hover:text-black hover:bg-muted hover:scale-105"
                         }`}
                     >
                         <img
@@ -88,7 +88,7 @@ const Navigation: React.FC<{
                 ))}
                 <button
                     onClick={onLogout}
-                    className="flex flex-col items-center justify-center p-2 min-w-0 flex-1 rounded-xl transition-all duration-200 text-destructive hover:bg-destructive/10 hover:scale-105"
+                    className="flex flex-col items-center justify-center p-2 min-w-0 flex-1 rounded-xl transition-all duration-200 text-black hover:bg-destructive/10 hover:scale-105"
                 >
                     <LogOut size={16} />
                     <span className="text-xs font-medium">Logout</span>
@@ -119,13 +119,13 @@ const Header: React.FC<{
                             className="w-11 h-11 bg-gradient-to-br rounded-lg flex items-center justify-center"
                         />
                         <div>
-                            <h1 className="text-lg font-semibold text-card-foreground flex items-center">
+                            <h1 className="text-lg font-semibold !text-black flex items-center">
                                 EduIndia
-                                <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                                <span className="ml-2 text-xs bg-primary/10 !text-black px-2 py-1 rounded-full">
                                     v1.0
                                 </span>
                             </h1>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs !text-black">
                                 Welcome, {user.name}
                             </p>
                         </div>
@@ -138,7 +138,7 @@ const Header: React.FC<{
                             onChange={(e) =>
                                 setLanguage(e.target.value as Language)
                             }
-                            className="bg-input text-foreground text-xs rounded-lg px-2 py-1 border-none outline-none focus:ring-2 focus:ring-ring"
+                            className="bg-input !text-black text-xs rounded-lg px-2 py-1 border-none outline-none focus:ring-2 focus:ring-ring"
                         >
                             {availableLanguages.map((lang) => (
                                 <option
@@ -164,12 +164,12 @@ const Header: React.FC<{
                             {isDark ? (
                                 <Sun
                                     size={16}
-                                    className="text-muted-foreground"
+                                    className="!text-black"
                                 />
                             ) : (
                                 <Moon
                                     size={16}
-                                    className="text-muted-foreground"
+                                    className="!text-black"
                                 />
                             )}
                         </button>
@@ -184,9 +184,9 @@ const Header: React.FC<{
                             aria-haspopup="dialog"
                             aria-label="Open notifications"
                         >
-                            <Bell size={16} className="text-muted-foreground" />
+                            <Bell size={16} className="!text-black" />
                             {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                <span className="absolute -top-1 -right-1 bg-destructive !text-black text-xs rounded-full w-5 h-5 flex items-center justify-center">
                                     {unreadCount}
                                 </span>
                             )}
@@ -219,13 +219,13 @@ const NotificationsPanel: React.FC<{
 
     const panel = (
         <div
-            className="fixed inset-0 z-[9999] bg-black/40 flex items-start justify-end p-4"
+            className="fixed inset-0 z-[9999] bg-black/40 dark:bg-black/60 backdrop-blur-sm flex items-start justify-end p-4"
             onClick={onClose}
             aria-modal="true"
             role="dialog"
         >
             <div
-                className="w-full sm:w-96 max-h-[80vh] bg-card border border-border rounded-lg shadow-xl overflow-hidden"
+                className="w-full sm:w-96 max-h-[80vh] bg-white dark:bg-card border border-border rounded-lg shadow-2xl overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between p-4 border-b border-border">
