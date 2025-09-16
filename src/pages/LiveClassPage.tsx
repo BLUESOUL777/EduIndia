@@ -596,7 +596,7 @@ export default function LiveClassPage(): JSX.Element {
         </div>
 
         {/* Main Content */}
-        <div className="flex flex-1">
+        <div className="flex flex-col lg:flex-row flex-1">
           {/* Video Area */}
           <div className="flex-1 bg-card relative">
             <div className="w-full h-full flex items-center justify-center">
@@ -614,17 +614,17 @@ export default function LiveClassPage(): JSX.Element {
             </div>
 
             {/* Local Video */}
-            <div className="absolute bottom-4 right-4 w-48 h-36 bg-card rounded-lg border-2 border-border overflow-hidden shadow-2xl">
+            <div className="absolute bottom-20 sm:bottom-4 right-2 sm:right-4 w-32 sm:w-48 h-24 sm:h-36 bg-card rounded-lg border-2 border-border overflow-hidden shadow-2xl">
               <video ref={localVideoRef} autoPlay playsInline muted className={`w-full h-full object-cover ${isVideoOn ? "block" : "hidden"}`} style={{ transform: "scaleX(-1)" }} />
               {!isVideoOn && (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
-                    <VideoOff size={24} />
+                    <VideoOff size={20} />
                     <div className="text-xs mt-1">Video Off</div>
                   </div>
                 </div>
               )}
-              <div className="absolute top-2 left-2 bg-popover text-foreground text-xs px-2 py-1 rounded">{isTeacher ? "You (Teacher)" : "You"}</div>
+              <div className="absolute top-1 left-1 bg-popover text-foreground text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">{isTeacher ? "You (Teacher)" : "You"}</div>
             </div>
 
             {/* Recording Indicator */}
@@ -636,18 +636,18 @@ export default function LiveClassPage(): JSX.Element {
             )}
 
             {/* Controls Overlay */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              <div className="flex items-center gap-4 bg-popover rounded-full px-6 py-3">
-                <button onClick={toggleAudio} className={`p-3 rounded-full transition-colors ${isAudioOn ? "bg-secondary" : "bg-destructive"} text-foreground`}>
-                  {isAudioOn ? <Mic size={20} /> : <MicOff size={20} />}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-[90%] sm:max-w-none">
+              <div className="flex items-center justify-center gap-2 sm:gap-4 bg-popover rounded-full px-3 sm:px-6 py-2 sm:py-3">
+                <button onClick={toggleAudio} className={`p-2 sm:p-3 rounded-full transition-colors ${isAudioOn ? "bg-secondary" : "bg-destructive"} text-foreground`}>
+                  {isAudioOn ? <Mic size={18} /> : <MicOff size={18} />}
                 </button>
 
-                <button onClick={toggleVideo} className={`p-3 rounded-full transition-colors ${isVideoOn ? "bg-secondary" : "bg-destructive"} text-foreground`}>
-                  {isVideoOn ? <Video size={20} /> : <VideoOff size={20} />}
+                <button onClick={toggleVideo} className={`p-2 sm:p-3 rounded-full transition-colors ${isVideoOn ? "bg-secondary" : "bg-destructive"} text-foreground`}>
+                  {isVideoOn ? <Video size={18} /> : <VideoOff size={18} />}
                 </button>
 
-                <button onClick={toggleHand} className={`p-3 rounded-full transition-colors ${handRaised ? "bg-primary" : "bg-secondary"} text-foreground`}>
-                  <Hand size={20} />
+                <button onClick={toggleHand} className={`p-2 sm:p-3 rounded-full transition-colors ${handRaised ? "bg-primary" : "bg-secondary"} text-foreground`}>
+                  <Hand size={18} />
                 </button>
 
                 <button
@@ -662,16 +662,16 @@ export default function LiveClassPage(): JSX.Element {
                       console.error("Error sharing screen:", err);
                     }
                   }}
-                  className="p-3 rounded-full bg-secondary text-foreground transition-colors"
+                  className="p-2 sm:p-3 rounded-full bg-secondary text-foreground transition-colors"
                 >
-                  <Share size={20} />
+                  <Share size={18} />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Sidebar */}
-          <div className="w-96 bg-popover border-l border-border flex flex-col">
+          <div className="w-full lg:w-96 bg-popover lg:border-l border-t lg:border-t-0 border-border flex flex-col">
             {/* Teacher Recording Controls */}
             {isTeacher && (
               <div className="p-4 border-b border-border">
@@ -798,31 +798,42 @@ export default function LiveClassPage(): JSX.Element {
 
   // NOT JOINED: show class list + device selectors + join buttons
   return (
-    <div className="min-h-screen bg-background text-foreground p-6">
-      <div className="max-w-6xl mx-auto grid grid-cols-3 gap-6">
-        <div className="col-span-2 bg-card rounded-lg shadow p-4">
+    <div className="min-h-screen bg-background text-foreground p-3 sm:p-6">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="md:col-span-2 bg-card rounded-lg shadow p-3 sm:p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-foreground">Live Classes</h2>
             <div className="text-sm text-muted-foreground">{loading ? "Loading..." : `${liveClasses.length} classes`}</div>
           </div>
 
           {/* device selectors */}
-          <div className="mb-4 flex gap-2 items-center">
-            <div className="text-sm text-muted-foreground mr-2">Devices:</div>
+          <div className="mb-4 flex flex-col sm:flex-row gap-2">
+            <div className="text-sm text-muted-foreground sm:mr-2 mb-1 sm:mb-0">Devices:</div>
 
-            <select value={selectedVideoId ?? ""} onChange={(e) => setSelectedVideoId(e.target.value || null)} className="px-2 py-1 rounded bg-card border border-border">
-              {videoDevices.length === 0 && <option value="">Default Camera</option>}
-              {videoDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Camera ${d.deviceId}`}</option>)}
-            </select>
+            <div className="flex flex-col sm:flex-row gap-2 flex-1">
+              <select 
+                value={selectedVideoId ?? ""} 
+                onChange={(e) => setSelectedVideoId(e.target.value || null)} 
+                className="px-2 py-1.5 rounded bg-card border border-border text-sm w-full sm:w-auto"
+              >
+                {videoDevices.length === 0 && <option value="">Default Camera</option>}
+                {videoDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Camera ${d.deviceId}`}</option>)}
+              </select>
 
-            <select value={selectedAudioId ?? ""} onChange={(e) => setSelectedAudioId(e.target.value || null)} className="px-2 py-1 rounded bg-card border border-border">
-              {audioDevices.length === 0 && <option value="">Default Microphone</option>}
-              {audioDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Mic ${d.deviceId}`}</option>)}
-            </select>
+              <select 
+                value={selectedAudioId ?? ""} 
+                onChange={(e) => setSelectedAudioId(e.target.value || null)} 
+                className="px-2 py-1.5 rounded bg-card border border-border text-sm w-full sm:w-auto"
+              >
+                {audioDevices.length === 0 && <option value="">Default Microphone</option>}
+                {audioDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Mic ${d.deviceId}`}</option>)}
+              </select>
+            </div>
 
-            <button onClick={() => enumerateDevices()} className="px-2 py-1 rounded bg-secondary text-foreground text-sm">Refresh</button>
-
-            <button onClick={testMic} className="px-2 py-1 rounded bg-secondary text-foreground text-sm ml-auto">Test Mic (2s)</button>
+            <div className="flex gap-2 sm:ml-auto">
+              <button onClick={() => enumerateDevices()} className="px-3 py-1.5 rounded bg-secondary text-foreground text-sm flex-1 sm:flex-none">Refresh</button>
+              <button onClick={testMic} className="px-3 py-1.5 rounded bg-secondary text-foreground text-sm flex-1 sm:flex-none">Test Mic (2s)</button>
+            </div>
           </div>
 
           {error && <div className="text-destructive mb-3">{error}</div>}
