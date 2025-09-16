@@ -264,8 +264,8 @@ const FAQPage: React.FC = () => {
 
       {/* Callback Form Modal */}
       {showCallbackForm && (
-        <div className="fixed inset-0 z-50 min-h-screen p-4 bg-black/40 flex items-start justify-center">
-          <div className="bg-white dark:bg-black h-full border border-border rounded-lg p-6 w-full max-w-md shadow-xl">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-lg p-6 w-full max-w-md shadow-xl">
             <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center">
               <Phone className="mr-2 text-primary" size={20} />
               {t('faq.requestCallback')}
