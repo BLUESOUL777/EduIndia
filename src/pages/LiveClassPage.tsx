@@ -80,7 +80,12 @@ const mockService = {
     console.log("Joining class:", classId);
     return true;
   },
-  uploadRecording: async (title: string, description: string, blob: Blob, type = "video") => {
+  uploadRecording: async (
+    title: string,
+    description: string,
+    blob: Blob,
+    type = "video"
+  ) => {
     console.log("Uploading recording:", { title, description, blob, type });
     return "lesson-" + Date.now();
   },
@@ -104,7 +109,9 @@ export default function LiveClassPage(): JSX.Element {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [recordingMode, setRecordingMode] = useState<"camera" | "screen">("camera");
+  const [recordingMode, setRecordingMode] = useState<"camera" | "screen">(
+    "camera"
+  );
   const [hasRecording, setHasRecording] = useState(false);
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonDescription, setLessonDescription] = useState("");
@@ -140,7 +147,10 @@ export default function LiveClassPage(): JSX.Element {
     navigator.mediaDevices?.addEventListener?.("devicechange", onDeviceChange);
 
     return () => {
-      navigator.mediaDevices?.removeEventListener?.("devicechange", onDeviceChange);
+      navigator.mediaDevices?.removeEventListener?.(
+        "devicechange",
+        onDeviceChange
+      );
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((t) => t.stop());
         localStreamRef.current = null;
@@ -169,7 +179,10 @@ export default function LiveClassPage(): JSX.Element {
   // This helper requests minimal permission and then re-enumerates devices so labels appear.
   const ensurePermissionsForDevices = async () => {
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const s = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
       s.getTracks().forEach((t) => t.stop());
     } catch (err) {
       // ignore
@@ -178,7 +191,8 @@ export default function LiveClassPage(): JSX.Element {
 
   const enumerateDevices = async () => {
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices)
+        return;
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videos = devices.filter((d) => d.kind === "videoinput");
       const audios = devices.filter((d) => d.kind === "audioinput");
@@ -191,15 +205,19 @@ export default function LiveClassPage(): JSX.Element {
         const audios2 = devices2.filter((d) => d.kind === "audioinput");
         setVideoDevices(videos2);
         setAudioDevices(audios2);
-        if (videos2.length && !selectedVideoId) setSelectedVideoId(videos2[0].deviceId);
-        if (audios2.length && !selectedAudioId) setSelectedAudioId(audios2[0].deviceId);
+        if (videos2.length && !selectedVideoId)
+          setSelectedVideoId(videos2[0].deviceId);
+        if (audios2.length && !selectedAudioId)
+          setSelectedAudioId(audios2[0].deviceId);
         return;
       }
 
       setVideoDevices(videos);
       setAudioDevices(audios);
-      if (videos.length && !selectedVideoId) setSelectedVideoId(videos[0].deviceId);
-      if (audios.length && !selectedAudioId) setSelectedAudioId(audios[0].deviceId);
+      if (videos.length && !selectedVideoId)
+        setSelectedVideoId(videos[0].deviceId);
+      if (audios.length && !selectedAudioId)
+        setSelectedAudioId(audios[0].deviceId);
     } catch (err) {
       console.warn("enumerateDevices failed", err);
     }
@@ -209,10 +227,16 @@ export default function LiveClassPage(): JSX.Element {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
-  const attachStreamToVideo = async (el: HTMLVideoElement | null, stream: MediaStream | null, muted = true) => {
+  const attachStreamToVideo = async (
+    el: HTMLVideoElement | null,
+    stream: MediaStream | null,
+    muted = true
+  ) => {
     if (!el || !stream) return;
     try {
       el.srcObject = stream;
@@ -220,14 +244,20 @@ export default function LiveClassPage(): JSX.Element {
 
       if (el.readyState >= 1) {
         await el.play().catch((err) => {
-          console.warn("video.play() blocked (autoplay policy). User interaction needed.", err);
+          console.warn(
+            "video.play() blocked (autoplay policy). User interaction needed.",
+            err
+          );
         });
       } else {
         await new Promise<void>((resolve) => {
           const onMeta = async () => {
             el.removeEventListener("loadedmetadata", onMeta);
             await el.play().catch((err) => {
-              console.warn("video.play() blocked (autoplay policy). User interaction needed.", err);
+              console.warn(
+                "video.play() blocked (autoplay policy). User interaction needed.",
+                err
+              );
             });
             resolve();
           };
@@ -270,8 +300,12 @@ export default function LiveClassPage(): JSX.Element {
 
       setError(null);
 
-      const videoConstraint: any = selectedVideoId ? { deviceId: { exact: selectedVideoId } } : { facingMode: "user" };
-      const audioConstraint: any = selectedAudioId ? { deviceId: { exact: selectedAudioId } } : true;
+      const videoConstraint: any = selectedVideoId
+        ? { deviceId: { exact: selectedVideoId } }
+        : { facingMode: "user" };
+      const audioConstraint: any = selectedAudioId
+        ? { deviceId: { exact: selectedAudioId } }
+        : true;
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: videoConstraint,
@@ -310,7 +344,9 @@ export default function LiveClassPage(): JSX.Element {
           {
             id: "1",
             sender: "System",
-            message: `Welcome to the live class${asTeacher ? " (Teacher Mode)" : ""}!`,
+            message: `Welcome to the live class${
+              asTeacher ? " (Teacher Mode)" : ""
+            }!`,
             timestamp: new Date().toISOString(),
           },
         ]);
@@ -318,9 +354,13 @@ export default function LiveClassPage(): JSX.Element {
     } catch (err: any) {
       console.error("Failed to access camera/microphone:", err);
       if (err?.name === "NotAllowedError" || err?.name === "SecurityError") {
-        alert("Permissions denied. Please allow camera & microphone for this site and try again.");
+        alert(
+          "Permissions denied. Please allow camera & microphone for this site and try again."
+        );
       } else if (err?.name === "NotFoundError") {
-        alert("No camera/microphone found. Please connect a device and try again.");
+        alert(
+          "No camera/microphone found. Please connect a device and try again."
+        );
       } else {
         alert("Failed to access camera/microphone. See console for details.");
       }
@@ -410,7 +450,9 @@ export default function LiveClassPage(): JSX.Element {
   /* --------------------------- Mic Test --------------------------- */
   const testMic = async () => {
     if (!localStreamRef.current) {
-      alert("No local stream available. Join the class first (or start preview).");
+      alert(
+        "No local stream available. Join the class first (or start preview)."
+      );
       return;
     }
     if (!localAudioRef.current) return;
@@ -435,9 +477,14 @@ export default function LiveClassPage(): JSX.Element {
 
       if (recordingMode === "screen") {
         // @ts-ignore
-        stream = await (navigator.mediaDevices as any).getDisplayMedia({ video: true, audio: true });
+        stream = await (navigator.mediaDevices as any).getDisplayMedia({
+          video: true,
+          audio: true,
+        });
         try {
-          const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const mic = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
           const micTrack = mic.getAudioTracks()[0];
           if (micTrack && stream) {
             (stream as MediaStream).addTrack(micTrack);
@@ -446,24 +493,38 @@ export default function LiveClassPage(): JSX.Element {
           // continue
         }
       } else {
-        stream = localStreamRef.current || (await navigator.mediaDevices.getUserMedia({ video: true, audio: true }));
+        stream =
+          localStreamRef.current ||
+          (await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true,
+          }));
       }
 
       recordedChunksRef.current = [];
       const options: any = { mimeType: "video/webm;codecs=vp8,opus" };
-      if (!(MediaRecorder as any).isTypeSupported(options.mimeType)) options.mimeType = "video/webm";
+      if (!(MediaRecorder as any).isTypeSupported(options.mimeType))
+        options.mimeType = "video/webm";
       if (!stream) {
         throw new Error("No media stream available for recording");
       }
-      mediaRecorderRef.current = new MediaRecorder(stream as MediaStream, options);
+      mediaRecorderRef.current = new MediaRecorder(
+        stream as MediaStream,
+        options
+      );
 
       mediaRecorderRef.current.ondataavailable = (ev: BlobEvent) => {
-        if (ev.data && ev.data.size > 0) recordedChunksRef.current.push(ev.data);
+        if (ev.data && ev.data.size > 0)
+          recordedChunksRef.current.push(ev.data);
       };
 
       mediaRecorderRef.current.onstop = () => {
         setHasRecording(true);
-        if (recordingMode === "screen" && stream && stream !== localStreamRef.current) {
+        if (
+          recordingMode === "screen" &&
+          stream &&
+          stream !== localStreamRef.current
+        ) {
           stream.getTracks().forEach((t) => t.stop());
         }
       };
@@ -547,7 +608,12 @@ export default function LiveClassPage(): JSX.Element {
 
     try {
       const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
-      await mockService.uploadRecording(lessonTitle, lessonDescription, blob, recordingMode === "screen" ? "screen" : "video");
+      await mockService.uploadRecording(
+        lessonTitle,
+        lessonDescription,
+        blob,
+        recordingMode === "screen" ? "screen" : "video"
+      );
       setTimeout(() => {
         setIsUploading(false);
         setUploadProgress(0);
@@ -574,20 +640,28 @@ export default function LiveClassPage(): JSX.Element {
   /* --------------------------- Render --------------------------- */
   if (isJoined && activeClass) {
     return (
-      <div className="flex flex-col h-screen bg-background text-foreground">
+      <div className="flex flex-col h-screen bg-background text-foreground mb-7">
         {/* Class Header */}
         <div className="bg-popover border-b border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-foreground">{activeClass.title}</h2>
+              <h2 className="text-lg font-semibold text-foreground">
+                {activeClass.title}
+              </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                {activeClass.instructor} • {activeClass.participants} participants
+                {activeClass.instructor} • {activeClass.participants}{" "}
+                participants
                 {isTeacher && " • Teacher Mode"}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="bg-destructive text-destructive-foreground px-2 py-1 rounded-full text-xs font-medium animate-pulse">LIVE</span>
-              <button onClick={leaveClass} className="bg-destructive text-destructive-foreground px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-colors">
+              <span className="bg-destructive text-destructive-foreground px-2 py-1 rounded-full text-xs font-medium animate-pulse">
+                LIVE
+              </span>
+              <button
+                onClick={leaveClass}
+                className="bg-destructive text-destructive-foreground px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-colors"
+              >
                 <PhoneOff size={16} />
                 <span>Leave</span>
               </button>
@@ -596,26 +670,46 @@ export default function LiveClassPage(): JSX.Element {
         </div>
 
         {/* Main Content */}
-        <div className="flex flex-1">
+        <div className="flex flex-col lg:flex-row flex-1">
           {/* Video Area */}
-          <div className="flex-1 bg-card relative">
+          <div className="flex-1 bg-card relative mb-7">
             <div className="w-full h-full flex items-center justify-center">
               {isTeacher ? (
-                <video ref={remoteVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
+                <video
+                  ref={remoteVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                  style={{ transform: "scaleX(-1)" }}
+                />
               ) : (
                 <div className="text-center text-foreground">
-                  <div className="w-32 h-32 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-32 h-32 bg-secondary rounded-full flex items-center justify-center mx-auto">
                     <Users size={48} />
                   </div>
-                  <p className="text-lg font-medium">{activeClass.instructor}</p>
-                  <p className="text-sm text-muted-foreground mt-1">Teaching: {activeClass.title}</p>
+                  <p className="text-lg font-medium">
+                    {activeClass.instructor}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Teaching: {activeClass.title}
+                  </p>
                 </div>
               )}
             </div>
 
             {/* Local Video */}
             <div className="absolute bottom-4 right-4 w-48 h-36 bg-card rounded-lg border-2 border-border overflow-hidden shadow-2xl">
-              <video ref={localVideoRef} autoPlay playsInline muted className={`w-full h-full object-cover ${isVideoOn ? "block" : "hidden"}`} style={{ transform: "scaleX(-1)" }} />
+              <video
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`w-full h-full object-cover ${
+                  isVideoOn ? "block" : "hidden"
+                }`}
+                style={{ transform: "scaleX(-1)" }}
+              />
               {!isVideoOn && (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
@@ -624,29 +718,49 @@ export default function LiveClassPage(): JSX.Element {
                   </div>
                 </div>
               )}
-              <div className="absolute top-2 left-2 bg-popover text-foreground text-xs px-2 py-1 rounded">{isTeacher ? "You (Teacher)" : "You"}</div>
+              <div className="absolute top-2 left-2 bg-popover text-foreground text-xs px-2 py-1 rounded">
+                {isTeacher ? "You (Teacher)" : "You"}
+              </div>
             </div>
 
             {/* Recording Indicator */}
             {isRecording && (
               <div className="absolute top-4 left-4 flex items-center gap-2 bg-destructive text-destructive-foreground px-3 py-2 rounded-lg">
                 <div className="w-3 h-3 bg-destructive-foreground rounded-full animate-pulse" />
-                <span className="font-medium">{isPaused ? "Recording Paused" : "Recording"} • {formatTime(recordingTime)}</span>
+                <span className="font-medium">
+                  {isPaused ? "Recording Paused" : "Recording"} •{" "}
+                  {formatTime(recordingTime)}
+                </span>
               </div>
             )}
 
             {/* Controls Overlay */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
               <div className="flex items-center gap-4 bg-popover rounded-full px-6 py-3">
-                <button onClick={toggleAudio} className={`p-3 rounded-full transition-colors ${isAudioOn ? "bg-secondary" : "bg-destructive"} text-foreground`}>
+                <button
+                  onClick={toggleAudio}
+                  className={`p-3 rounded-full transition-colors ${
+                    isAudioOn ? "bg-secondary" : "bg-destructive"
+                  } text-foreground`}
+                >
                   {isAudioOn ? <Mic size={20} /> : <MicOff size={20} />}
                 </button>
 
-                <button onClick={toggleVideo} className={`p-3 rounded-full transition-colors ${isVideoOn ? "bg-secondary" : "bg-destructive"} text-foreground`}>
+                <button
+                  onClick={toggleVideo}
+                  className={`p-3 rounded-full transition-colors ${
+                    isVideoOn ? "bg-secondary" : "bg-destructive"
+                  } text-foreground`}
+                >
                   {isVideoOn ? <Video size={20} /> : <VideoOff size={20} />}
                 </button>
 
-                <button onClick={toggleHand} className={`p-3 rounded-full transition-colors ${handRaised ? "bg-primary" : "bg-secondary"} text-foreground`}>
+                <button
+                  onClick={toggleHand}
+                  className={`p-3 rounded-full transition-colors ${
+                    handRaised ? "bg-primary" : "bg-secondary"
+                  } text-foreground`}
+                >
                   <Hand size={20} />
                 </button>
 
@@ -654,7 +768,9 @@ export default function LiveClassPage(): JSX.Element {
                   onClick={async () => {
                     try {
                       // @ts-ignore
-                      const stream = await (navigator.mediaDevices as any).getDisplayMedia({ video: true });
+                      const stream = await (
+                        navigator.mediaDevices as any
+                      ).getDisplayMedia({ video: true });
                       stream.getTracks()[0].onended = () => {
                         console.log("Screen share ended");
                       };
@@ -671,7 +787,7 @@ export default function LiveClassPage(): JSX.Element {
           </div>
 
           {/* Sidebar */}
-          <div className="w-96 bg-popover border-l border-border flex flex-col">
+          <div className="w-full lg:w-96 bg-popover border-l border-border flex flex-col">
             {/* Teacher Recording Controls */}
             {isTeacher && (
               <div className="p-4 border-b border-border">
@@ -682,14 +798,35 @@ export default function LiveClassPage(): JSX.Element {
 
                 {!isRecording && !hasRecording && (
                   <div className="flex gap-2 mb-3">
-                    <button onClick={() => setRecordingMode("camera")} className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${recordingMode === "camera" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>Camera</button>
-                    <button onClick={() => setRecordingMode("screen")} className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${recordingMode === "screen" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>Screen</button>
+                    <button
+                      onClick={() => setRecordingMode("camera")}
+                      className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${
+                        recordingMode === "camera"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-foreground"
+                      }`}
+                    >
+                      Camera
+                    </button>
+                    <button
+                      onClick={() => setRecordingMode("screen")}
+                      className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${
+                        recordingMode === "screen"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-foreground"
+                      }`}
+                    >
+                      Screen
+                    </button>
                   </div>
                 )}
 
                 <div className="flex gap-2">
                   {!isRecording && !hasRecording && (
-                    <button onClick={startRecording} className="flex-1 px-3 py-2 rounded text-sm bg-destructive text-destructive-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
+                    <button
+                      onClick={startRecording}
+                      className="flex-1 px-3 py-2 rounded text-sm bg-destructive text-destructive-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1"
+                    >
                       <Radio size={14} />
                       Start Recording
                     </button>
@@ -697,12 +834,18 @@ export default function LiveClassPage(): JSX.Element {
 
                   {isRecording && (
                     <>
-                      <button onClick={pauseRecording} className="flex-1 px-3 py-2 rounded text-sm bg-primary text-primary-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
+                      <button
+                        onClick={pauseRecording}
+                        className="flex-1 px-3 py-2 rounded text-sm bg-primary text-primary-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1"
+                      >
                         {isPaused ? <Play size={14} /> : <Pause size={14} />}
                         {isPaused ? "Resume" : "Pause"}
                       </button>
 
-                      <button onClick={stopRecording} className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
+                      <button
+                        onClick={stopRecording}
+                        className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1"
+                      >
                         <Square size={14} />
                         Stop
                       </button>
@@ -711,11 +854,27 @@ export default function LiveClassPage(): JSX.Element {
 
                   {!isRecording && hasRecording && (
                     <>
-                      <button onClick={() => { const blob = new Blob(recordedChunksRef.current, { type: "video/webm" }); const url = URL.createObjectURL(blob); const w = window.open(url, "_blank"); if (!w) alert("Popup blocked — download the recording instead"); }} className="flex-1 px-3 py-2 rounded text-sm bg-accent text-accent-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => {
+                          const blob = new Blob(recordedChunksRef.current, {
+                            type: "video/webm",
+                          });
+                          const url = URL.createObjectURL(blob);
+                          const w = window.open(url, "_blank");
+                          if (!w)
+                            alert(
+                              "Popup blocked — download the recording instead"
+                            );
+                        }}
+                        className="flex-1 px-3 py-2 rounded text-sm bg-accent text-accent-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1"
+                      >
                         <Play size={14} /> Play
                       </button>
 
-                      <button onClick={downloadRecording} className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1">
+                      <button
+                        onClick={downloadRecording}
+                        className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90 transition-colors flex items-center justify-center gap-1"
+                      >
                         <Download size={14} /> Download
                       </button>
                     </>
@@ -724,27 +883,79 @@ export default function LiveClassPage(): JSX.Element {
 
                 {/* Recording details */}
                 <div className="mt-3 text-sm text-muted-foreground">
-                  <div>Mode: <span className="font-medium text-foreground">{recordingMode}</span></div>
-                  <div>Time: <span className="font-medium text-foreground">{formatTime(recordingTime)}</span></div>
-                  <div>Slide: <span className="font-medium text-foreground">{currentSlide}/{totalSlides}</span></div>
+                  <div>
+                    Mode:{" "}
+                    <span className="font-medium text-foreground">
+                      {recordingMode}
+                    </span>
+                  </div>
+                  <div>
+                    Time:{" "}
+                    <span className="font-medium text-foreground">
+                      {formatTime(recordingTime)}
+                    </span>
+                  </div>
+                  <div>
+                    Slide:{" "}
+                    <span className="font-medium text-foreground">
+                      {currentSlide}/{totalSlides}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Slide controls */}
                 <div className="mt-3 flex gap-2">
-                  <button onClick={() => setCurrentSlide((s) => Math.max(1, s - 1))} className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90">Prev</button>
-                  <button onClick={nextSlide} className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90">Next</button>
+                  <button
+                    onClick={() => setCurrentSlide((s) => Math.max(1, s - 1))}
+                    className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    onClick={nextSlide}
+                    className="flex-1 px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90"
+                  >
+                    Next
+                  </button>
                 </div>
 
                 {/* Publish */}
                 <div className="mt-4">
-                  <input placeholder="Lesson title" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} className="w-full px-3 py-2 rounded bg-card text-foreground text-sm mb-2" />
-                  <textarea placeholder="Lesson description (optional)" value={lessonDescription} onChange={(e) => setLessonDescription(e.target.value)} className="w-full px-3 py-2 rounded bg-card text-foreground text-sm mb-2 h-20" />
+                  <input
+                    placeholder="Lesson title"
+                    value={lessonTitle}
+                    onChange={(e) => setLessonTitle(e.target.value)}
+                    className="w-full px-3 py-2 rounded bg-card text-foreground text-sm mb-2"
+                  />
+                  <textarea
+                    placeholder="Lesson description (optional)"
+                    value={lessonDescription}
+                    onChange={(e) => setLessonDescription(e.target.value)}
+                    className="w-full px-3 py-2 rounded bg-card text-foreground text-sm mb-2 h-20"
+                  />
 
                   <div className="flex gap-2">
-                    <button onClick={publishLesson} disabled={isUploading} className="flex-1 px-3 py-2 rounded text-sm bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60">
-                      {isUploading ? `Uploading ${Math.round(uploadProgress)}%` : "Publish Lesson"}
+                    <button
+                      onClick={publishLesson}
+                      disabled={isUploading}
+                      className="flex-1 px-3 py-2 rounded text-sm bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60"
+                    >
+                      {isUploading
+                        ? `Uploading ${Math.round(uploadProgress)}%`
+                        : "Publish Lesson"}
                     </button>
-                    <button onClick={() => { recordedChunksRef.current = []; setHasRecording(false); setRecordingTime(0); setLessonTitle(""); setLessonDescription(""); }} className="px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90">Clear</button>
+                    <button
+                      onClick={() => {
+                        recordedChunksRef.current = [];
+                        setHasRecording(false);
+                        setRecordingTime(0);
+                        setLessonTitle("");
+                        setLessonDescription("");
+                      }}
+                      className="px-3 py-2 rounded text-sm bg-secondary text-foreground hover:opacity-90"
+                    >
+                      Clear
+                    </button>
                   </div>
                 </div>
               </div>
@@ -753,22 +964,51 @@ export default function LiveClassPage(): JSX.Element {
             {/* Chat & Participants */}
             <div className="flex-1 p-4 flex flex-col overflow-hidden">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-foreground font-medium text-sm flex items-center gap-2"><MessageSquare size={14} /> Chat</h4>
-                <div className="text-xs text-muted-foreground">{activeClass.participants} participants</div>
+                <h4 className="text-foreground font-medium text-sm flex items-center gap-2">
+                  <MessageSquare size={14} /> Chat
+                </h4>
+                <div className="text-xs text-muted-foreground">
+                  {activeClass.participants} participants
+                </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto mb-3 space-y-2" style={{ maxHeight: "40vh" }}>
+              <div
+                className="flex-1 overflow-y-auto mb-3 space-y-2"
+                style={{ maxHeight: "40vh" }}
+              >
                 {chatMessages.map((m) => (
-                  <div key={m.id} className={`p-2 rounded ${m.sender === "You" || m.sender === "Teacher" ? "bg-primary text-primary-foreground self-end" : "bg-secondary text-muted-foreground"}`}>
-                    <div className="text-xs opacity-80">{m.sender} • {new Date(m.timestamp).toLocaleTimeString()}</div>
+                  <div
+                    key={m.id}
+                    className={`p-2 rounded ${
+                      m.sender === "You" || m.sender === "Teacher"
+                        ? "bg-primary text-primary-foreground self-end"
+                        : "bg-secondary text-muted-foreground"
+                    }`}
+                  >
+                    <div className="text-xs opacity-80">
+                      {m.sender} • {new Date(m.timestamp).toLocaleTimeString()}
+                    </div>
                     <div className="mt-1 text-sm">{m.message}</div>
                   </div>
                 ))}
               </div>
 
               <div className="flex gap-2">
-                <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") sendChatMessage(); }} placeholder="Type a message..." className="flex-1 px-3 py-2 rounded bg-card text-foreground text-sm" />
-                <button onClick={sendChatMessage} className="px-3 py-2 rounded bg-primary text-primary-foreground">Send</button>
+                <input
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") sendChatMessage();
+                  }}
+                  placeholder="Type a message..."
+                  className="flex-1 px-3 py-2 rounded bg-card text-foreground text-sm"
+                />
+                <button
+                  onClick={sendChatMessage}
+                  className="px-3 py-2 rounded bg-primary text-primary-foreground"
+                >
+                  Send
+                </button>
               </div>
             </div>
 
@@ -777,14 +1017,28 @@ export default function LiveClassPage(): JSX.Element {
               <div className="flex items-center gap-3">
                 <Users size={18} />
                 <div>
-                  <div className="text-sm text-foreground">{activeClass.instructor}</div>
-                  <div className="text-xs text-muted-foreground">Instructor</div>
+                  <div className="text-sm text-foreground">
+                    {activeClass.instructor}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Instructor
+                  </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <button onClick={() => alert("Raise hand toggled")} className="px-3 py-2 rounded bg-secondary text-foreground">Raise</button>
-                <button onClick={() => alert("Request to speak sent")} className="px-3 py-2 rounded bg-secondary text-foreground">Request</button>
+                <button
+                  onClick={() => alert("Raise hand toggled")}
+                  className="px-3 py-2 rounded bg-secondary text-foreground"
+                >
+                  Raise
+                </button>
+                <button
+                  onClick={() => alert("Request to speak sent")}
+                  className="px-3 py-2 rounded bg-secondary text-foreground"
+                >
+                  Request
+                </button>
               </div>
             </div>
           </div>
@@ -798,63 +1052,124 @@ export default function LiveClassPage(): JSX.Element {
 
   // NOT JOINED: show class list + device selectors + join buttons
   return (
-    <div className="min-h-screen bg-background text-foreground p-6">
-      <div className="max-w-6xl mx-auto grid grid-cols-3 gap-6">
-        <div className="col-span-2 bg-card rounded-lg shadow p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Live Classes</h2>
-            <div className="text-sm text-muted-foreground">{loading ? "Loading..." : `${liveClasses.length} classes`}</div>
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT SECTION - Live Classes */}
+        <div className="col-span-1 lg:col-span-2 bg-card rounded-lg shadow p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+            <h2 className="text-lg font-semibold text-foreground">
+              Live Classes
+            </h2>
+            <div className="text-sm text-muted-foreground">
+              {loading ? "Loading..." : `${liveClasses.length} classes`}
+            </div>
           </div>
 
-          {/* device selectors */}
-          <div className="mb-4 flex gap-2 items-center">
-            <div className="text-sm text-muted-foreground mr-2">Devices:</div>
+          {/* Device selectors */}
+          <div className="mb-4 flex flex-col sm:flex-row flex-wrap items-center gap-3">
+            <div className="text-sm text-muted-foreground">Devices:</div>
 
-            <select value={selectedVideoId ?? ""} onChange={(e) => setSelectedVideoId(e.target.value || null)} className="px-2 py-1 rounded bg-card border border-border">
-              {videoDevices.length === 0 && <option value="">Default Camera</option>}
-              {videoDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Camera ${d.deviceId}`}</option>)}
+            <select
+              value={selectedVideoId ?? ""}
+              onChange={(e) => setSelectedVideoId(e.target.value || null)}
+              className="w-full sm:w-auto flex-1 min-w-0 px-2 py-1 rounded
+      bg-card text-foreground border border-border appearance-none
+      dark:bg-black dark:text-white"
+            >
+              {videoDevices.length === 0 && (
+                <option value="">Default Camera</option>
+              )}
+              {videoDevices.map((d) => (
+                <option key={d.deviceId} value={d.deviceId}>
+                  {d.label || `Camera ${d.deviceId}`}
+                </option>
+              ))}
             </select>
 
-            <select value={selectedAudioId ?? ""} onChange={(e) => setSelectedAudioId(e.target.value || null)} className="px-2 py-1 rounded bg-card border border-border">
-              {audioDevices.length === 0 && <option value="">Default Microphone</option>}
-              {audioDevices.map((d) => <option key={d.deviceId} value={d.deviceId}>{d.label || `Mic ${d.deviceId}`}</option>)}
+            <select
+              value={selectedAudioId ?? ""}
+              onChange={(e) => setSelectedAudioId(e.target.value || null)}
+              className="w-full sm:w-auto flex-1 min-w-0 px-2 py-1 rounded
+      bg-card text-foreground border border-border appearance-none
+      dark:bg-black dark:text-white"
+            >
+              {audioDevices.length === 0 && (
+                <option value="">Default Microphone</option>
+              )}
+              {audioDevices.map((d) => (
+                <option key={d.deviceId} value={d.deviceId}>
+                  {d.label || `Mic ${d.deviceId}`}
+                </option>
+              ))}
             </select>
 
-            <button onClick={() => enumerateDevices()} className="px-2 py-1 rounded bg-secondary text-foreground text-sm">Refresh</button>
+            <button className="w-full sm:w-auto px-3 py-1 rounded bg-secondary text-foreground text-sm">
+              Refresh
+            </button>
 
-            <button onClick={testMic} className="px-2 py-1 rounded bg-secondary text-foreground text-sm ml-auto">Test Mic (2s)</button>
+            <button className="w-full sm:w-auto px-3 py-1 rounded bg-secondary text-foreground text-sm">
+              Test Mic (2s)
+            </button>
           </div>
 
           {error && <div className="text-destructive mb-3">{error}</div>}
 
+          {/* Live classes list */}
           <div className="space-y-3">
             {liveClasses.map((c) => (
-              <div key={c.id} className="border rounded p-3 flex items-center justify-between border-border">
-                <div>
-                  <div className="font-medium text-foreground">{c.title}</div>
-                  <div className="text-xs text-muted-foreground">{c.instructor} • {c.status}</div>
+              <div
+                key={c.id}
+                className="border rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between border-border gap-3"
+              >
+                {/* Title/Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-foreground break-words">
+                    {c.title}
+                  </div>
+                  <div className="text-xs text-muted-foreground break-words">
+                    {c.instructor} • {c.status}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => joinClass(c.id, false)} className="px-3 py-2 rounded bg-primary text-primary-foreground">Join</button>
-                  <button onClick={() => joinClass(c.id, true)} className="px-3 py-2 rounded bg-accent text-accent-foreground">Join as Teacher</button>
+
+                {/* Buttons */}
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={() => joinClass(c.id, false)}
+                    className="flex-1 sm:flex-none px-3 py-2 rounded bg-primary text-primary-foreground"
+                  >
+                    Join
+                  </button>
+                  <button
+                    onClick={() => joinClass(c.id, true)}
+                    className="flex-1 sm:flex-none px-3 py-2 rounded bg-accent text-accent-foreground"
+                  >
+                    Join as Teacher
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Upcoming */}
         <div className="bg-card rounded-lg shadow p-4">
           <div className="mb-3">
             <h3 className="font-medium text-foreground">Upcoming</h3>
-            <div className="text-sm text-muted-foreground mt-1">Scheduled & ended classes</div>
+            <div className="text-sm text-muted-foreground mt-1">
+              Scheduled & ended classes
+            </div>
           </div>
           <div className="space-y-2">
-            {liveClasses.filter((l) => l.status !== "live").map((l) => (
-              <div key={l.id} className="flex items-center justify-between">
-                <div className="text-sm text-foreground">{l.title}</div>
-                <div className="text-xs text-muted-foreground">{l.status}</div>
-              </div>
-            ))}
+            {liveClasses
+              .filter((l) => l.status !== "live")
+              .map((l) => (
+                <div key={l.id} className="flex items-center justify-between">
+                  <div className="text-sm text-foreground">{l.title}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {l.status}
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
       </div>

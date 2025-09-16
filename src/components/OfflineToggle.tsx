@@ -46,7 +46,7 @@ const OfflineToggle: React.FC = () => {
 
       {/* Toast Notification */}
       {showToast && (
-        <div className="fixed top-20 right-4 z-50 bg-card border border-border rounded-lg shadow-xl p-4 max-w-sm animate-fade-in">
+        <div className="fixed top-20 right-4 z-50 bg-white border border-border rounded-lg shadow-xl p-4 max-w-sm animate-fade-in">
           <div className="flex items-center space-x-3">
             {isOffline ? (
               <WifiOff className="text-destructive" size={20} />

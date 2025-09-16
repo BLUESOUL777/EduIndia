@@ -198,7 +198,7 @@ const LessonsPage: React.FC<LessonsPageProps> = ({ isOnline = true }) => {
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
-              className="px-4 py-3 border border-input rounded-xl bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
+              className="px-4 py-3 border border-input rounded-xl bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-black"
             >
               {subjects.map(subject => (
                 <option key={subject} value={subject}>
