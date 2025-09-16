@@ -30,10 +30,10 @@ const OfflineToggle: React.FC = () => {
     <>
       <button
         onClick={toggleOfflineMode}
-        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm !text-black ${
+        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm ${
           isOffline
-            ? 'bg-chart-1/10 hover:bg-chart-1/20'
-            : 'bg-chart-2/10 hover:bg-chart-2/20'
+            ? 'bg-chart-1/10 text-chart-1 hover:bg-chart-1/20'
+            : 'bg-chart-2/10 text-chart-2 hover:bg-chart-2/20'
         }`}
         title={isOffline ? t('offline.modeEnabled') : t('offline.modeDisabled')}
         aria-label={isOffline ? 'Currently offline' : 'Currently online'}

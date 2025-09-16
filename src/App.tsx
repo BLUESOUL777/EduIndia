@@ -35,7 +35,6 @@ const Navigation: React.FC<{
   userRole: "student" | "teacher";
   onLogout: () => void;
 }> = ({ activeTab, onTabChange, userRole, onLogout }) => {
-
   const { t } = useLanguage();
 
   const studentTabs = [
@@ -105,7 +104,6 @@ const Header: React.FC<{
   onNotificationClick: () => void;
   user: User;
 }> = ({ notifications, onNotificationClick, user }) => {
-
   const { isDark, toggleTheme } = useTheme();
   const { language, setLanguage, availableLanguages } = useLanguage();
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -127,72 +125,6 @@ const Header: React.FC<{
               <p className="text-xs text-muted-foreground">
                 Welcome, {user.name}
               </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                        {/* Language Selector */}
-                        <select
-                            value={language}
-                            onChange={(e) =>
-                                setLanguage(e.target.value as Language)
-                            }
-                            className="bg-input !text-black text-xs rounded-lg px-2 py-1 border-none outline-none focus:ring-2 focus:ring-ring"
-                        >
-                            {availableLanguages.map((lang) => (
-                                <option
-                                    key={lang.code}
-                                    value={lang.code}
-                                    className="bg-card"
-                                >
-                                    {lang.nativeName}
-                                </option>
-                            ))}
-                        </select>
-
-                        {/* Theme Toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            className="p-2 rounded-lg hover:bg-muted transition-colors"
-                            title={
-                                isDark
-                                    ? "Switch to Light Mode"
-                                    : "Switch to Dark Mode"
-                            }
-                        >
-                            {isDark ? (
-                                <Sun
-                                    size={16}
-                                    className="!text-black"
-                                />
-                            ) : (
-                                <Moon
-                                    size={16}
-                                    className="!text-black"
-                                />
-                            )}
-                        </button>
-
-                        {/* Offline Toggle */}
-                        <OfflineToggle />
-
-                        {/* Notifications */}
-                        <button
-                            onClick={onNotificationClick}
-                            className="relative p-2 rounded-lg hover:bg-muted transition-colors"
-                            aria-haspopup="dialog"
-                            aria-label="Open notifications"
-                        >
-                            <Bell size={16} className="!text-black" />
-                            {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-destructive !text-black text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                    {unreadCount}
-                                </span>
-                            )}
-                        </button>
-                    </div>
-                </div>
-
             </div>
           </div>
 
@@ -255,7 +187,6 @@ const NotificationsPanel: React.FC<{
   onMarkRead: (id: string) => void;
   onMarkAllRead: () => Promise<void> | void;
 }> = ({ notifications, isOpen, onClose, onMarkRead, onMarkAllRead }) => {
-
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -288,7 +219,7 @@ const NotificationsPanel: React.FC<{
             <X size={16} />
           </button>
         </div>
-        
+
         <div className="max-h-[60vh] overflow-y-auto">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">

@@ -231,7 +231,7 @@ const AssignmentCenter: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 animate-fade-in p-3 sm:p-0">
+    <div className="space-y-6 animate-fade-in">
       {/* invisible/native file input */}
       <input
         ref={fileInputRef}
@@ -249,7 +249,7 @@ const AssignmentCenter: React.FC = () => {
         </h2>
 
         <div
-          className={`border-2 border-dashed rounded-xl p-4 sm:p-8 text-center transition-all shadow-sm ${
+          className={`border-2 border-dashed rounded-xl p-8 text-center transition-all shadow-sm ${
             dragActive
               ? "border-primary bg-accent"
               : "border-border hover:border-muted-foreground"
@@ -271,16 +271,16 @@ const AssignmentCenter: React.FC = () => {
 
           {/* show selected file name */}
           {selectedFileName && (
-            <p className="text-xs sm:text-sm text-foreground mb-3 sm:mb-4">
+            <p className="text-sm text-foreground mb-4">
               <strong>Selected:</strong> {selectedFileName}
             </p>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={handleBrowseClick}
               disabled={isUploading}
-              className="bg-primary text-primary-foreground px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 font-medium flex items-center justify-center text-sm sm:text-base"
+              className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 font-medium flex items-center justify-center"
             >
               <Paperclip size={16} className="mr-2" />
               {isUploading
@@ -291,7 +291,7 @@ const AssignmentCenter: React.FC = () => {
             <button
               onClick={simulateUpload}
               disabled={isUploading}
-              className="bg-chart-2 text-primary-foreground px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-chart-2/90 transition-all shadow-sm disabled:opacity-50 font-medium flex items-center justify-center text-sm sm:text-base"
+              className="bg-chart-2 text-primary-foreground px-6 py-3 rounded-lg hover:bg-chart-2/90 transition-all shadow-sm disabled:opacity-50 font-medium flex items-center justify-center"
             >
               <Camera size={16} className="mr-2" />
               {t("assignments.takePhoto")}
@@ -322,8 +322,8 @@ const AssignmentCenter: React.FC = () => {
         </div>
 
         {/* AI Review Status */}
-        <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-chart-2/10 rounded-xl border border-chart-2/20">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+        <div className="mt-6 p-4 bg-chart-2/10 rounded-xl border border-chart-2/20">
+          <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium text-card-foreground">
                 {t("assignments.aiReview", "AI Review System")}
@@ -336,7 +336,7 @@ const AssignmentCenter: React.FC = () => {
               </p>
             </div>
             <div className="text-chart-2">
-              <Star size={20} className="sm:w-6 sm:h-6" />
+              <Star size={24} />
             </div>
           </div>
         </div>
@@ -347,7 +347,7 @@ const AssignmentCenter: React.FC = () => {
         <h3 className="text-lg font-semibold text-card-foreground mb-6">
           {t("assignments.mySubmissions")}
         </h3>
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-4">
           {assignments.map((assignment) => (
             <div
               key={assignment.id}
@@ -394,11 +394,11 @@ const AssignmentCenter: React.FC = () => {
                       <div className="flex items-center">
                         <div className="w-24 bg-muted rounded-full h-2 mr-3">
                           <div
-                            className="bg-chart-2 h-1.5 rounded-full transition-all duration-500"
+                            className="bg-chart-2 h-2 rounded-full transition-all duration-500"
                             style={{ width: `${assignment.aiScore}%` }}
                           ></div>
                         </div>
-                        <span className="text-xs font-medium text-card-foreground ml-3 min-w-[45px]">
+                        <span className="text-sm font-medium text-card-foreground">
                           {assignment.aiScore}/100
                         </span>
                       </div>
@@ -420,7 +420,7 @@ const AssignmentCenter: React.FC = () => {
                     )}
                 </div>
 
-                <div className="flex items-center sm:ml-4">
+                <div className="flex items-center ml-4">
                   {getStatusIcon(assignment.status)}
                   <span
                     className={`ml-2 text-sm font-medium px-3 py-1 rounded-full shadow-sm ${getStatusColor(

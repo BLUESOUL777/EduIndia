@@ -713,7 +713,7 @@ export default function LiveClassPage(): JSX.Element {
               {!isVideoOn && (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
-                    <VideoOff size={20} />
+                    <VideoOff size={24} />
                     <div className="text-xs mt-1">Video Off</div>
                   </div>
                 </div>
@@ -778,9 +778,9 @@ export default function LiveClassPage(): JSX.Element {
                       console.error("Error sharing screen:", err);
                     }
                   }}
-                  className="p-2 sm:p-3 rounded-full bg-secondary text-foreground transition-colors"
+                  className="p-3 rounded-full bg-secondary text-foreground transition-colors"
                 >
-                  <Share size={18} />
+                  <Share size={20} />
                 </button>
               </div>
             </div>
